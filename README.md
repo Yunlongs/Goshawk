@@ -1,4 +1,5 @@
 # Code Structure
+>Clang Static analyzer plugins see https://github.com/Yunlongs/NLP-CSA
 ## Directories
 - `data_process:` The scripts for pre-processing, parsing and normalizing the function prototypes.
 - `model:` Pre-trained Siamese network, can be directly used to classify functions.
@@ -12,7 +13,15 @@
 - `mysegment.py:` The ULM based function prototype segmentation algorithm.
 - `frontend_checker.py:` Validate the MM functions according the function prototype and data flow.
  
-### How to train your Simaese network for your customized target function identification task (e.g.,MM functions, crypto functions,...).
+ 
+## Ⅰ. Environment Setup
+```buildoutcfg
+tensorflow = 2.1
+```
+
+Download the [subword embeddings](https://yunlongs-1253041399.cos.ap-chengdu.myqcloud.com/word_embedding) to the directory `subword_dataset/word_embedding`
+ 
+## Ⅱ. How to train your Simaese network for your customized target function identification task (e.g.,MM functions, crypto functions,...).
 **1. Prepare your training function prototype dataset**.
 
 Take crypto function as example, the dataset should be the prototypes of your collected crypto functions.
