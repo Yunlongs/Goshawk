@@ -1,0 +1,3 @@
+{"funcname": "mem_malloc", "return_type": "void *", "params": "unsigned long@size,"}
+{"funcname": "mem_free", "return_type": "void", "params": "void *@ptr,"}
+{"funcname": "cast_set_key", "return_type": "void", "params": "cast_key *@key,int@len,const unsigned char *@data,"}

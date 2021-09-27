@@ -1,0 +1,5 @@
+.idea/
+__pycache__/
+output/
+temp/
+subword_dataset/word_embedding
