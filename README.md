@@ -22,7 +22,7 @@ tensorflow = 2.1
 Download the [subword embeddings](https://yunlongs-1253041399.cos.ap-chengdu.myqcloud.com/word_embedding) to the directory `subword_dataset/word_embedding`
  
 ## Ⅱ. How to train your Simaese network for your customized target function identification task (e.g.,MM functions, crypto functions,...).
-**1. Prepare your training function prototype dataset**.
+### 1. Prepare your training function prototype dataset.
 
 Take crypto function as example, the dataset should be the prototypes of your collected crypto functions.
 Each line is a function prototype.
@@ -41,7 +41,7 @@ static int crypto_authenc_esn_decrypt(struct aead_request *req)
 ...
 ``` 
 
-**2. Train the Siamese network.**
+### 2. Train the Siamese network.
 
 We have implemented the re-train of Siamese network in the script `Re-train.py`.
  It takes two arguments:
@@ -56,7 +56,7 @@ python Re-train.py crypto.txt crypto
 After the training finished, your trained model which names "crypto" is saved at directory "model/crypto".
 
 
-**3. Infer similarities.**
+### 3. Infer similarities.
 
 The already trained model were saved in the directory "model", 
 you can use them to infer similarity for other functions directly.
