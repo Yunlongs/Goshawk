@@ -220,19 +220,18 @@ def normalize_two_files(in_file, out_file, multi=None):
     else:
         normalize_one_file_multi(in_file, "alloc", out_file, multi)
 
+def normalize_prototype_file(in_file, out_file):
+    '''
+        Segment and normalize the function prototypes in the `in_file`, and the results are saved at `out_file.`
+        For example,
+            before: void * kmalloc_array(size_t n, size_t size, gfp_t flags)
+            after:  <cls> <ptr> kmalloc array ( <noptr> n <dot> <noptr> size <dot> <noptr> flags )
+    '''
+    from data_proccess.get_label_data import convert_origin_to_prototype, convert_prototype_to_json
+    convert_origin_to_prototype(in_file)
+    convert_prototype_to_json(in_file)
+    normalize_on_file(in_file,"alloc", out_file)
+
 
 if __name__ == "__main__":
-    # normalize_two_files("../Dataset/labeled_dataset/merge_alloc.json","subword_dataset/tmp/alloc",multi=config.multi)
-    # normalize_two_files("../Dataset/labeled_dataset/merge_free.json", "subword_dataset/tmp/free", multi=config.multi)
-    # normalize_two_files("../Dataset/labeled_dataset/all_funcs.neg", "subword_dataset/tmp/neg", multi=config.multi)
-    # normalize_two_files("../Dataset/labeled_dataset/hard_free_prototype.json", "subword_dataset/training/hard_free", multi=config.multi)
-    #normalize_two_files("subword_dataset/kernel_dataset/test_set/alloc.test",
-     #                   "subword_dataset/training/alloc/alloc.test", multi=config.multi)
-    #normalize_two_files("subword_dataset/kernel_dataset/test_set/free.test", "subword_dataset/training/free/free.test",
-    #                    multi=config.multi)
-    #normalize_two_files("subword_dataset/kernel_dataset/test_set/neg.test", "subword_dataset/training/alloc/neg.test",
-    #                    multi=config.multi)
-    #normalize_two_files("subword_dataset/kernel_dataset/test_set/neg.test", "subword_dataset/training/free/neg.test",
-    #                    multi=config.multi)
-    normalize_two_files("subword_dataset/crypto/encrypt_prototype.json","subword_dataset/crypto/encrypt.train",multi=config.multi)
-    pass
+    normalize_prototype_file("subword_dataset/test1.func", "temp/seg.func")

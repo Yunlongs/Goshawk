@@ -20,8 +20,20 @@ tensorflow = 2.1
 ```
 
 Download the [subword embeddings](https://yunlongs-1253041399.cos.ap-chengdu.myqcloud.com/word_embedding) to the directory `subword_dataset/word_embedding`
- 
-## Ⅱ. How to train your Simaese network for your customized target function identification task (e.g.,MM functions, crypto functions,...).
+
+## Ⅱ. Function Proatotype Segmentation
+Function `normalize_prototype_file(in_file, out_file)` in `normalize.py` can be used to segment function prototypes.
+
+It Segments and normalizes the function prototypes in the `in_file`, and the results are saved at `out_file.`
+
+```buildoutcfg
+For example,
+    before: void * kmalloc_array(size_t n, size_t size, gfp_t flags)
+    after:  <cls> <ptr> kmalloc array ( <noptr> n <dot> <noptr> size <dot> <noptr> flags )
+```
+
+
+## Ⅲ. Re-train Simaese network for your customized target function identification task (e.g.,MM functions, crypto functions,...).
 ### 1. Prepare your training function prototype dataset.
 
 Take crypto function as example, the dataset should be the prototypes of your collected crypto functions.
