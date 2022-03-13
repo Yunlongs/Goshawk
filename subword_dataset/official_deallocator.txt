@@ -1,0 +1,10 @@
+free    0
+kfree   0
+vfree   0
+kmem_cache_free 1
+kfree_sensitive 0
+kfree_const 0
+kvfree  0
+iounmap 0
+__free_pages  0
+munmap  0

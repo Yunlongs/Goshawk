@@ -62,3 +62,32 @@ func_name_sim_path = "temp/func_name_similarity"
 
 # Frontend Checker config
 strong_belief_threshold = 0.95
+#min_call = 10
+min_reset = 20 # kernel for 20, others for 2
+
+
+import os
+cur_work_dir = os.getcwd()
+plugin_dir = cur_work_dir + "/plugins"
+temp_dir = cur_work_dir + "/temp"
+
+#Call Graph
+call_graph_path= temp_dir + os.sep + "call_graph.json"
+
+# MOS Free Plugin
+candidate_free_path = cur_work_dir + "/temp/candidate_free.txt"
+seed_free_path = cur_work_dir + "/temp/seed_free.txt"
+mos_seed_path = cur_work_dir + "/temp/last_step_mos.json"
+mos_free_outpath = cur_work_dir + "/temp/memory_flow_free.json"
+visited_file_path = cur_work_dir + "/temp/visited.txt"
+
+# MOS Alloc Plugin
+candidate_alloc_path = cur_work_dir + "/temp/candidate_alloc.txt"
+seed_alloc_path = cur_work_dir + "/temp/seed_alloc.txt"
+mos_alloc_outpath = cur_work_dir + "/temp/memory_flow_alloc.json"
+
+max_iteration = 15
+
+# temporary files
+free_check_file = "temp/free_check.txt"
+time_record_file = "temp/time_record.txt"

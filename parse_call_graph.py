@@ -18,6 +18,7 @@ def remove_dup_caller(in_file, out_file):
     :param out_file:
     :return:
     """
+    print("Waiting... Processing the whole program call graph...")
     caller_funcs = []
     children = {}
     with open(in_file, "r") as f:

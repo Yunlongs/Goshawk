@@ -20,7 +20,7 @@ conserved_words = ["<cls>","<ptr>","<dptr>","<noptr>","<dot>","(",")"]
 max_seq_length = 60
 
 #Training sample strategy config
-k = 40
+k = 50
 test_k = 20
 test_ratio = 0.1
 valid_ratio = 0.1
@@ -45,7 +45,7 @@ hardest_threshold = 0.98
 Buffer_size = 10000
 mini_batch = 100
 feature_size = 128
-epochs = 30
+epochs = 50
 step_per_epoch = 1500
 inference_batch = 3000
 loss = "mse"   ## mse or constrastive
@@ -54,8 +54,4 @@ banalace_split=False
 
 
 # Similarity Inference config
-model_dir = "output/Transformer/experiment_101"
-
-
-# Frontend Checker config
-strong_belief_threshold = 0.99
+model_dir = "model/best"

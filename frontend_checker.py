@@ -1,10 +1,23 @@
 import config, json, os
 from similarity_inference import working_on_json_function_prototype
-from parse_call_graph import read_caller_and_callee, write_call_graph_to_file, convert_call_graph_to_dict
+from parse_call_graph import read_caller_and_callee, convert_call_graph_to_dict, write_call_graph_to_file
 from normalize import parse_params, normalize_type_1
 import tensorflow as tf
+from utils import decide_minrest, MMD_call_chains
 
 memory_flows = {}
+
+
+
+class CallTree(object):
+    def __init__(self):
+        self.childs = []
+        self.depth = 0
+
+    def add_child(self, child):
+        self.childs.append(child)
+        if child.depth >= self.depth:
+            self.depth = child.depth + 1
 
 
 def get_all_funcs(in_file, out_file=None):
@@ -41,31 +54,30 @@ def get_candidate_alloc_function_set(func_similarity, call_graph):
     candidate_function_set = []
     for func in call_graph:
         caller = func["caller"]
-        if func_similarity.get(caller["funcname"]) == None:
+        if func_similarity.get(caller["funcname"]) is None:
             continue
         if func_similarity[caller["funcname"]] <= config.inference_threshold:
             continue
+
+        pointer_arg_num = 0 # number of pointer type in return value and parameters.
+        return_type = caller["return_type"]
+        params = caller["params"]
+        if normalize_type_1(return_type) != "<noptr>":
+            pointer_arg_num += 1
+        for argtype, argname in parse_params(params):
+            if argtype != "<noptr>":
+                pointer_arg_num += 1
+                break
+        if pointer_arg_num == 0:
+            continue
         candidate_function_set.append(func)
+
+    with open(config.candidate_alloc_path, "w") as f:
+        for func in candidate_function_set:
+            caller = func["caller"]
+            funcname = caller["funcname"]
+            f.write(funcname + "\n")
     return candidate_function_set
-
-
-def get_target_free_function_set(func_similarity):
-    pass
-
-
-def write_allocation_set(allocation_set, out_path="temp/allocation_set"):
-    with open(out_path, "w") as f:
-        with open(out_path + "_only_funcname", "w") as f_name:
-            for func in allocation_set:
-                caller = func["caller"]
-                f.write(json.dumps(caller) + "\n")
-                f_name.write(caller["funcname"] + "\n")
-                callees = func["target_callees"]
-                for callee in callees:
-                    f.write("\t" + json.dumps(callee) + "\n")
-                    f_name.write(callee["funcname"] + "\n")
-                f.write("-\n")
-                f_name.write("-\n")
 
 
 def get_target_callees(func_similarity, func, belief_bitmaps):
@@ -121,6 +133,16 @@ def dedup_memory_flow(in_file):
         f.writelines(result)
 
 
+def write_allocation_set(allocation_set, out_path="temp/allocation_set"):
+    with open(out_path, "w") as f:
+        for func in allocation_set:
+            caller = func["caller"]
+            f.write(caller["funcname"] + "\n")
+            callees = func["target_callees"]
+            for callee in callees:
+                f.write(callee["funcname"] + "\n")
+            f.write("-\n")
+
 def load_memory_flow(in_file):
     dedup_memory_flow(in_file)
     global memory_flows
@@ -153,10 +175,8 @@ def get_belief_func_bitmap(func_similarity, belief_functions):
     :return:
     """
     bitmaps = {}
-    belief_function_list = [func["caller"]["funcname"] for func in belief_functions]
     for func_name in func_similarity:
-        bitmaps[func_name] = 1 if func_name in belief_function_list else 0
-    bitmaps["malloc"] = 1
+        bitmaps[func_name] = 1 if func_name in belief_functions else 0
     return bitmaps
 
 
@@ -185,6 +205,7 @@ def is_abnormal_alloc(funcname):
         return True
     return False
 
+
 def check_caller_is_belief(func_similarity, func, belief_bitmaps, call_graph):
     """
     1. 对于每个函数，看它是否直接调用强可信函数
@@ -199,10 +220,6 @@ def check_caller_is_belief(func_similarity, func, belief_bitmaps, call_graph):
     caller = func["caller"]
     caller_func_name = caller["funcname"]
 
-    # 下面这一段代码供 debug用
-    if caller_func_name == "slab_alloc":
-        print(1)
-        pass
     # 若函数自身已经是强可信函数，则不需要再次验证
     if belief_bitmaps[caller_func_name] == 1:
         return
@@ -257,9 +274,9 @@ def check_caller_is_belief(func_similarity, func, belief_bitmaps, call_graph):
         belief_bitmaps[caller_func_name] = -1
 
 
-def initial_strong_belief_alloc_function(func_similarity, call_graph):
+def initial_special_alloc_function(func_similarity, call_graph):
     """
-    得到关于alloc的初始强可信函数集合。 筛选策略如下：
+    识别得到各项目自定义的特殊原语allocators的函数。 筛选策略如下：
     1. 返回类型为指针, return a pointer
     2. 相似度大于一个阈值, sim_alloc is greater than a threshold
     3. 如果返回类型为一个结构体，内部不能调用超过两个allocation 函数
@@ -267,13 +284,10 @@ def initial_strong_belief_alloc_function(func_similarity, call_graph):
     :param in_file:
     :return:
     """
-    strong_belief_alloc_function = []
+    special_alloc_function = []
 
     for func in call_graph:
         caller = func["caller"]
-
-        if caller["funcname"] == "cudbg_alloc_handle":
-            debug = 1
 
         flag = 0
         # firstly, check the return type of this caller function whether is '<ptr>'
@@ -282,11 +296,11 @@ def initial_strong_belief_alloc_function(func_similarity, call_graph):
 
         #secondly, check the parameters of this caller function whether contains '<ptr>' or '<dptr>'.
         # Here "kmem_cache" is a special case in Linux Kernel. Such as "kmem_cache_alloc" has a pointer-type parameter "struct kmem_cache*"
-        for raw_argtype,arg_type, arg_name in parse_params(caller["params"],arg_normalize=False):
+        for raw_argtype,arg_type, arg_name in parse_params(caller["params"], arg_normalize=False):
             if (arg_type == '<ptr>' and "kmem_cache" not in raw_argtype) or arg_type == '<dptr>':
-                flag = 1
+                flag += 1
                 break
-        if flag == 1:
+        if flag > 1:
             continue
 
         callees = func["callees"]
@@ -299,7 +313,6 @@ def initial_strong_belief_alloc_function(func_similarity, call_graph):
         if func_similarity[caller['funcname']] <= config.strong_belief_threshold:
             continue
 
-        #
 
         # forth, if this function called no allocation functions, filter out it.
         alloc_callee_numbers = 0
@@ -315,9 +328,9 @@ def initial_strong_belief_alloc_function(func_similarity, call_graph):
                 continue
 
         # finally, all checks are passed.
-        strong_belief_alloc_function.append(func)
+        special_alloc_function.append(caller["funcname"])
     print("initial_strong_belief_alloc_function finished!")
-    return strong_belief_alloc_function
+    return special_alloc_function
 
 
 def getBaseName(param):
@@ -332,6 +345,7 @@ def getBaseName(param):
         return basename[1:]
     else:
         return basename
+
 
 def isMemberName(param):
     if param.find("-") != -1 or param.find(".") != -1:
@@ -367,22 +381,25 @@ def check_return_and_param_is_equal(callee_flow,params):
             return True
     return False
 
-def initial_strong_belief_free_function(func_similarity, call_graph):
+
+invalidate_list = ["kfree_skb_list", "sock_release"]
+
+def initial_candidate_free_function(func_similarity, call_graph):
     """
-    得到关于free的初始强可信函数，选择策略如下；
-    1. 相似性分数大于一个阈值
-    2. 函数返回类型为void
-    3. 函数包含参数且为指针
-    4. 函数中仅调用了一个free及以上的函数
+    得到关于free的(候选)函数，选择策略如下；
+    1. 相似性分数大于一个阈值, similarity score greater than a threshold.
+    2. 函数返回类型为void 或非指针类型, the return type is non-pointer type.
+    3. 函数包含参数且为指针, has at least a parameter with pointer type.
+    4. 函数实现中至少调用了一个高于相似性阈值的函数, function body has called at least one function with similarity greater than threshold.
     :param func_similarity:
     :param call_graph:
     :return:
     """
-    strong_belief_free_function = []
+    experiment_candidates = [] # Only for recording experiment data
+    candidate_free_functions = []
     for func in call_graph:
         caller = func["caller"]
         caller_funcname = caller["funcname"]
-
 
         # 相似性分数大于一个阈值
         if func_similarity.get(caller_funcname) == None:
@@ -391,8 +408,8 @@ def initial_strong_belief_free_function(func_similarity, call_graph):
             continue
 
         # 函数返回类型为非指针类型
-        #if normalize_type_1(caller["return_type"]) in ["<ptr>", "<dptr>"]:
-        if "void" not in caller["return_type"]:
+        if normalize_type_1(caller["return_type"]) in ["<ptr>", "<dptr>"]:
+        #if "void" not in caller["return_type"]:
             continue
 
         # 函数至少包含一个指针参数
@@ -405,6 +422,7 @@ def initial_strong_belief_free_function(func_similarity, call_graph):
                 flag = 1
         if flag == 0:
             continue
+        experiment_candidates.append(caller_funcname)
 
         # 函数中调用了一个及以上的free函数
         free_number = 0
@@ -420,19 +438,23 @@ def initial_strong_belief_free_function(func_similarity, call_graph):
         if free_number < 1:
             continue
 
+        if caller_funcname in invalidate_list:
+            continue
         # 通过所有的验证
         new_func = {"caller": caller, "callees": new_callees}
-        strong_belief_free_function.append(new_func)
-    write_call_graph_to_file(strong_belief_free_function, "temp/strong_belief_free_function")
-    with open("temp/free_set.txt","w") as f:
-        for func in strong_belief_free_function:
+        candidate_free_functions.append(new_func)
+
+    with open(config.candidate_free_path, "w") as f:
+        for func in candidate_free_functions:
             caller = func["caller"]
             func_name = caller["funcname"]
             f.write(func_name + "\n")
-    return strong_belief_free_function
+    with open("temp/experiment_candidate_free.txt", "w") as f:
+        f.write("\n".join(experiment_candidates))
+    return candidate_free_functions
 
 
-def belief_chain_check_1(func_similarity, allocation_set, belief_bitmaps):
+def call_chain_check_1(func_similarity, allocation_set, belief_bitmaps):
     """
     Check the input allocation functions, whether they call a allocation function.
     If call, return.
@@ -454,7 +476,7 @@ def belief_chain_check_1(func_similarity, allocation_set, belief_bitmaps):
     return new_allocation_set
 
 
-def belief_chain_check_2(func_similarity, call_graph, allocation_set, belief_bitmaps):
+def call_chain_check_2(func_similarity, call_graph, allocation_set, belief_bitmaps):
     """
     在这一步的验证中，我们将进行如下步骤：
     1. 对于每个函数，看它是否直接调用强可信函数
@@ -486,10 +508,6 @@ def belief_chain_check_3(caller,belief_callees):
     # 如果在clang收集的信息流中，没有找对对应的，那么认为此函数不可信
     if memory_flows.get(func_name) is None:
         return False
-
-    print(func_name)
-    if func_name == "iavf_vlan_rx_add_vid":
-        a = 1
 
     returned_memory_set = []
     param_memory_set = []
@@ -549,6 +567,7 @@ def belief_chain_check_3(caller,belief_callees):
         return True
     return False
 
+
 def generate_primitve_deallocators(call_graph, func_similarity, min_call, min_reset):
     func_freq = {}
     with open("temp/Dealloc_Number.txt", "r") as f:
@@ -571,22 +590,25 @@ def generate_primitve_deallocators(call_graph, func_similarity, min_call, min_re
     with open("temp/seed_free.txt","w") as f:
         f.writelines(truth_funcs)
 
-def count_free_call_site(belief_functions,call_graph):
+
+def count_free_call_site(candidate_functions, call_graph):
     """
-    上一步会返回符合规则的free函数。这里统计每个free函数出现的次数。
-    :param belief_functions:
+    上一步会返回符合规则的candidate free函数。这里统计每个candidate free函数出现的次数。
+
+    :param candidate_functions:
     :param call_graph:
-    :param func_similarity:
     :return:
     """
     func_freq = {}
-    for func in belief_functions:
+    # Initialize the frequency of each candidate free function as 1.
+    for func in candidate_functions:
         caller = func["caller"]
         funcname = caller["funcname"]
         if "unregister" in funcname or "remove" in funcname or "cleanup" in funcname or "unpin" in funcname:
             continue
-
         func_freq[funcname] = 1
+
+    # Walking the call graph and count the frequency.
     for func in call_graph:
         callees = func["callees"]
         for callee in callees:
@@ -595,23 +617,20 @@ def count_free_call_site(belief_functions,call_graph):
             if func_freq.get(callee_name) is None:
                 continue
             func_freq[callee_name] += number
+
     sorted_func_freq = sorted(func_freq.items(), key=lambda d: d[1], reverse=True)
-    with open("temp/Dealloc_Number.txt","w") as f:
+
+    with open("temp/Dealloc_Number.txt", "w") as f:
         for funcname, freq in sorted_func_freq:
             line = funcname.ljust(50," ") + str(freq)
             f.write(line + "\n")
-    with open("temp/free_funcs.txt","w") as f:
-        f.write("dev_kfree_skb" + "\n")
-        for funcname, freq in sorted_func_freq:
-            f.write(funcname + "\n")
     return func_freq
-
 
 
 def get_belief_topk(func_freq,min_reset):
     top10_ratio = []
     func_freq["dev_kfree_skb"] = 1270
-    with open("temp/free_check.txt","r") as f:
+    with open(config.free_check_file, "r") as f:
         for i,line in enumerate(f.readlines()):
             line = line.strip().split()
             func = line[0]
@@ -624,6 +643,7 @@ def get_belief_topk(func_freq,min_reset):
     min_ratio = min(top10_ratio)
     topk = min_reset/min_ratio
     return int(topk)
+
 
 def filter_out_untruth(func_freq,min_reset,topk):
     func_null_freq  = {}
@@ -660,6 +680,7 @@ def filter_out_untruth(func_freq,min_reset,topk):
         new_func_freq.append((func,freq))
     return new_func_freq,truth
 
+
 def parse_param_reassignment(file):
     func = {}
     with open(file,"r") as f:
@@ -668,9 +689,10 @@ def parse_param_reassignment(file):
             func[funcname] = (int(index), int(number))
     return func
 
-def primitive_deallocator_identification(call_graph, func_similarity, free_check_file, min_reassignment=10):
+
+def special_deallocator_identification(call_graph, func_similarity, free_check_file, min_reassignment=10):
     """
-    根据通过语义识别出来的释放函数和其被调用次数，寻找其中的原语deallocator。
+    根据通过语义识别出来的释放函数和其被调用次数，寻找并扩充其中的每个项目中独自实现的原语deallocator。
     规则：
     1. 返回值类型为void
     2. 相似性大于strong_threshold
@@ -680,6 +702,7 @@ def primitive_deallocator_identification(call_graph, func_similarity, free_check
     :param call_graph:
     :return:
     """
+    decide_minrest()
     func_reassign = parse_param_reassignment(free_check_file)
     deallocators = []
     func_freq = {}
@@ -690,16 +713,15 @@ def primitive_deallocator_identification(call_graph, func_similarity, free_check
                 continue
             func_freq[func] = int(freq)
 
-    call_graph_map = convert_call_graph_to_dict(call_graph)
     for funcname, sim in func_similarity.items():
         #2. 相似性大于strong_threshold
         if sim <= config.strong_belief_threshold:
             continue
 
         #1.返回值类型为void
-        if call_graph_map.get(funcname) is None:
+        if call_graph.get(funcname) is None:
             continue
-        caller = call_graph_map[funcname]["caller"]
+        caller = call_graph[funcname]["caller"]
         ret_type = caller["return_type"]
         if "void" not in ret_type:
             continue
@@ -712,7 +734,7 @@ def primitive_deallocator_identification(call_graph, func_similarity, free_check
             continue
 
         #4.被确定的参数，返回类型为struct, 则只调用一次deallocation函数。
-        callees = call_graph_map[funcname]["callees"]
+        callees = call_graph[funcname]["callees"]
         dealloc_num = 0
         for callee in callees:
             callee_name = callee["funcname"]
@@ -720,7 +742,7 @@ def primitive_deallocator_identification(call_graph, func_similarity, free_check
                 continue
             if func_similarity[callee_name] >= config.inference_threshold:
                 dealloc_num += callee["number"]
-        if dealloc_num ==0:
+        if dealloc_num == 0:
             continue
 
         params = caller["params"]
@@ -728,20 +750,20 @@ def primitive_deallocator_identification(call_graph, func_similarity, free_check
         if index > len(param_list):
             continue
         determined_param = param_list[index]
-        if "struct" in determined_param and dealloc_num>1:
+        if "struct" in determined_param or dealloc_num > 1:
             continue
 
         ## 额外的验证： 过滤因为数据流引擎不精确导致的极个别误报
         call_times = func_freq[funcname]
         call_times = int(call_times)
-        if 2*reassign_num >= call_times and reassign_num<min_reassignment+10:
+        if 2*reassign_num >= call_times and reassign_num < min_reassignment+10:
             continue
         deallocators.append([funcname, index, reassign_num])
     new_map = sorted(deallocators, key=lambda d: d[2], reverse=True)
-    with open("temp/primitive_deallocator.txt","w") as f:
+    with open("temp/special_deallocator.txt","w") as f:
         for func,index,num in new_map:
             f.write(func + "\t" + str(index) + "\t" + str(num) + "\n")
-
+    return new_map
 
 
 def primitive_deallocator(func_freq,call_graph,func_similarity,min_call=50):
@@ -781,8 +803,6 @@ def primitive_deallocator(func_freq,call_graph,func_similarity,min_call=50):
             continue
         new_func_freq[funcname] = freq
     return new_func_freq
-
-
 
 
 def count_belief_function_free(belief_functions,call_graph):
@@ -858,51 +878,53 @@ def get_seed_file(func_number, call_graph):
     return seed_func
 
 
-def generate_seed_free(primitive_file="temp/primitive_deallocator.txt"):
+def generate_seed_free(sp_deallocators):
     seeds = []
-    with open("temp/primitive_deallocator.txt", "r") as f:
-        for line in f.readlines():
-            funcname,index,number = line.split()
-            seeds.append([funcname,index])
-    with open("temp/seed_free.txt","w") as f:
+    for funcname, index, number in sp_deallocators:
+        seeds.append([funcname,index])
+    with open(config.seed_free_path, "w") as f:
+        with open("subword_dataset/official_deallocator.txt", "r") as f_r:
+            f.write(f_r.read() + "\n")
         for seed in seeds:
             funcname,index = seed[0],seed[1]
-            f.write(funcname + "\t"+ index + "\n")
+            f.write(funcname + "\t" + str(index) + "\n")
 
-def run_free(in_file, step =1, min_reassignment = 10):
+
+def generate_seed_allocators(belief_function):
+    seed_allocators = set()
+    with open("subword_dataset/official_allocator.txt", "r") as f:
+        for func in f.readlines():
+            seed_allocators.add(func.strip())
+        for func in belief_function:
+            seed_allocators.add(func)
+    return list(seed_allocators)
+
+
+def run_free(call_graph_file, step=1):
+    """
+        Step 0: Only debug use, do not need to perform similarity inference from the beginning,
+            directly load the similarity from file.
+        Step 1: Perform Similarity inference for each function,
+            to infer the similarity scores with allocation/deallocation functions.
+        Step 2:
+    """
     if step == 1:
         model = tf.keras.models.load_model(os.path.join(config.model_dir, "free", "maxauc_model"))
-        _ = get_all_funcs(in_file, "temp/extract_all_func")
+        _ = get_all_funcs(call_graph_file, "temp/extract_all_func")
         func_similarity = working_on_json_function_prototype(model, "temp/extract_all_func", "free")
     else:
         func_similarity = load_func_name_similarity()
-    call_graph = read_caller_and_callee(in_file)
+    call_graph = read_caller_and_callee(call_graph_file)
 
-    if step ==2:
-        free_check_file = "temp/free_check.txt"
-        primitive_deallocator_identification(call_graph, func_similarity, free_check_file, min_reassignment)
-        generate_seed_free("temp/primitive_deallocator.txt")
-        return
+    if step == 2:
+        call_graph = convert_call_graph_to_dict(call_graph)
+        sp_funcs = special_deallocator_identification(call_graph, func_similarity, config.free_check_file, config.min_reset)
+        generate_seed_free(sp_funcs)
+        call_chains = MMD_call_chains(call_graph)
+        return call_graph, call_chains
     # step1 : Find the initial strong belief allocation functions
-    belief_functions = initial_strong_belief_free_function(func_similarity, call_graph)
-    count_free_call_site(belief_functions,call_graph)
-
-def belief_chain_propagation_algorithm_free(in_file, step=2, min_call=50, min_reset=10):
-    if step == 1:
-        model = tf.keras.models.load_model(os.path.join(config.model_dir, "free", "maxauc_model"))
-        _ = get_all_funcs(in_file, "temp/extract_all_func")
-        func_similarity = working_on_json_function_prototype(model, "temp/extract_all_func", "free")
-    else:
-        func_similarity = load_func_name_similarity()
-    call_graph = read_caller_and_callee(in_file)
-    # whole_call_graph = read_caller_and_callee(whole_call_graph_file)
-
-    if step ==3:
-        generate_primitve_deallocators(call_graph, func_similarity, min_call, min_reset)
-        return
-    # step1 : Find the initial strong belief allocation functions
-    belief_functions = initial_strong_belief_free_function(func_similarity, call_graph)
-    count_free_call_site(belief_functions,call_graph)
+    candidate_functions = initial_candidate_free_function(func_similarity, call_graph)
+    count_free_call_site(candidate_functions, call_graph)
 
 
 def write_final_alloc_result(belief_bitmaps, out_dir = "output/alloc/"):
@@ -937,17 +959,8 @@ def write_final_alloc_result(belief_bitmaps, out_dir = "output/alloc/"):
         for k,v in function_json.items():
             f.write(json.dumps(v) + "\n")
 
-def write_primitive_allocator(allocators):
-    primitives = []
-    for func in allocators:
-        caller = func["caller"]
-        funcname = caller["funcname"]
-        primitives.append(funcname)
-    with open("temp/primitive_allocator.txt","w") as f:
-        for func in primitives:
-            f.write(func + "\n")
 
-def belief_chain_propagation_algorithm_alloc(in_file, memory_flow_file, step=2):
+def run_alloc(in_file=config.call_graph_path, step=1):
     """
     1. 为所有的函数原型计算sim_alloc相似性分数
     2. 过滤掉sim_alloc < infer_similarity的函数
@@ -966,33 +979,27 @@ def belief_chain_propagation_algorithm_alloc(in_file, memory_flow_file, step=2):
         _ = get_all_funcs(in_file, "temp/extract_all_func")
         func_similarity = working_on_json_function_prototype(model, "temp/extract_all_func", "alloc")
         end = time.time()
-        print("alloc similarity score generated time:%s"% (end -start))
+        print("alloc similarity score generated time:%s"% (end - start))
     else:
         func_similarity = load_func_name_similarity()
-    start = time.time()
     call_graph = read_caller_and_callee(in_file)
-    # whole_call_graph = read_caller_and_callee(whole_call_graph_file)
     candidate_set = get_candidate_alloc_function_set(func_similarity, call_graph)
-    #write_call_graph_to_file(allocation_set, "temp/allocation_set_call_graph")
 
     # step1 : Find the initial strong belief allocation functions
-    belief_functions = initial_strong_belief_alloc_function(func_similarity, call_graph)
-    belief_bitmaps = get_belief_func_bitmap(func_similarity, belief_functions)
-    write_call_graph_to_file(belief_functions, "temp/whole_belief_call_graph")
-    write_primitive_allocator(belief_functions)
-
-    # setp2: Check whether the annotated allocation functions call an allocation function.
-    allocation_set = belief_chain_check_1(func_similarity, candidate_set, belief_bitmaps)
+    belief_functions = initial_special_alloc_function(func_similarity, call_graph)
+    seed_allocators = generate_seed_allocators(belief_functions)
+    belief_bitmaps = get_belief_func_bitmap(func_similarity, seed_allocators)
+    allocation_set = call_chain_check_1(func_similarity, candidate_set, belief_bitmaps)
     write_allocation_set(allocation_set)
     if step == 1:
         return
 
-    # step3: Check whether the allocation functions are strong belief functions.
-    load_memory_flow(memory_flow_file)
-    belief_bitmaps = belief_chain_check_2(func_similarity, call_graph, allocation_set, belief_bitmaps)
+    # step2: Check whether the allocation functions are strong belief functions.
+    load_memory_flow(config.mos_alloc_outpath)
+    belief_bitmaps = call_chain_check_2(func_similarity, call_graph, allocation_set, belief_bitmaps)
     write_final_alloc_result(belief_bitmaps)
-    end = time.time()
-    print("algorithm running time: %s"%(end - start))
+
+
 
 return_function_list = []
 return_function_name_set = set()
@@ -1000,10 +1007,6 @@ param_function_list = []
 param_function_name_set = set()
 
 
-
 if __name__ == "__main__":
-    in_file = "subword_dataset/FreeBSD/call_graph.json"
-    memory_flow_file = "temp/memory_flow_alloc.json"
-    #belief_chain_propagation_algorithm_free(in_file,step=1,min_call=10, min_reset=5)
-    #run_free(in_file,step=1,min_reassignment=10)
-    belief_chain_propagation_algorithm_alloc(in_file,memory_flow_file,step=1)
+    run_alloc(config.call_graph_path, step=1)
+    run_alloc(config.call_graph_path, step=2)
