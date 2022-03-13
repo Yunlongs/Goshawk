@@ -9,7 +9,7 @@ def argmax(indexs):
             max_arg = i
     return max_arg
 
-def cleanup_null_check(file):
+def cleanup_free_null_check(file):
     func_maps = {}
     with open(file) as f:
         for line in f.readlines():

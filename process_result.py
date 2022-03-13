@@ -3,7 +3,7 @@ from normalize import parse_params
 from parse_call_graph import read_caller_and_callee
 
 
-def remove_dup(in_file):
+def deduplicate_dataflow(in_file):
     """
     对所有的函数进行去重，并且去掉最后一个"<nops>"
     :param in_file:
@@ -162,21 +162,16 @@ def classify_free_data(memory_flow_file,out_dir = "output/free/"):
                 print(line.strip())
     with open(out_dir + "FreeCustomizedFile.txt", "w") as f:
         f.writelines(FreeCustomized)
-    #with open("temp/free/classify/only_release_param.txt","w") as f:
-    #    f.writelines(Parameters)
-    #with open("temp/free/classify/only_release_param_member.txt","w") as f:
-    #    f.writelines(Parameter_Member)
-    #with open("temp/free/classify/release_both_param_and_param_member.txt","w") as f:
-    #    f.writelines(Parameter_and_Member)
     print("only param: %s \n only member :%s param_member:%s" %(only_param,only_member,param_member))
 
 
-def get_overlaped_free(mem_file,call_graph_file):
+def get_next_iteration_funcs(mem_file,call_graph_file):
     """
-    因为在我们第一轮迭代得到的memory free函数中，有些函数存在着重叠嵌套。
+    因为在我们第一轮迭代得到的memory free函数中，有些函数存在着迭代调用。
     比如说： mlx5e_encap_dealloc 函数还额外调用了 kvfree_call_rcu来释放内存。
-    而且kvfree_call_rcu释放的内存也被我们在第一轮中标记了出来，所以我们要将
+    而且kvfree_call_rcu释放的内存也被我们在第一轮中标记了出来，所以我们最终要将
     kvfree_call_rcu释放的内存归还给mlx5e_encap_dealloc。
+    因此，在下一轮迭代中，我们需要用kvfree_call_rcu和seed function的mos帮助mlx5e_encap_dealloc生成MOS。
     :param mem_file:
     :param call_graph_file:
     :return:
@@ -184,7 +179,7 @@ def get_overlaped_free(mem_file,call_graph_file):
     call_graph = read_caller_and_callee(call_graph_file)
     mem_funcs = {}
     # 读取memory_flow_free中所有的函数名
-    with open(mem_file ,"r") as f:
+    with open(mem_file, "r") as f:
         for line in f.readlines():
             func = json.loads(line)
             funcname = func["funcname"]
@@ -634,18 +629,5 @@ if __name__ == "__main__":
     FreeNormalFile = "temp/free/FreeNormalFile.txt"
     FreeCustomiezdFile = "temp/free/FreeCustomizedFile.txt"
 
-    #get_initial_alloc()
-    #remove_dup("temp/free/memory_flow_free.json")
-    #remove_dup(checked_file)
-    #comparative_analysis("temp/free/old_memory_flow_free.json","temp/free/memory_flow_free.json")
-    get_overlaped_free(memory_free_file,func_file)
-    #add_new_memory_flow(checked_file,"temp/free/memory_flow_free.json", overlap_file)
-    #get_can_direct_use_deallocation()
     classify_free_data()
     get_CSA_format()
-    #classify_alloc_data()
-    #analysis_result_free_Parameter_and_Member()
-    #get_new_round_free(FreeNormalFile,FreeCustomiezdFile,AllFuncFile)
-    #get_added_free("temp/free/memory_flow_free_round2.json")
-    #get_new_round_free(None,"temp/free/new_round_add",AllFuncFile)
-    #analysis_result_free_Parameter_and_Member()
