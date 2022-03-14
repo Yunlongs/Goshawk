@@ -163,6 +163,7 @@ def Step_3_Free():
     with open(config.time_record_file, "a") as f:
         f.write("dealloc_generation:" + str(generation_end - generation_start) + "\n")
 
+
 def isCodeCheckerExist():
     retCode = subprocess.call("CodeChecker version", shell=True)
     if retCode == 0:
@@ -187,8 +188,11 @@ def format_analyzer_command():
     ExterFile = MemFuncDir + os.sep + "extern_count.txt"
 
     cfg_cmd += " -Xclang -load -Xclang {0} -Xclang -analyze -Xclang -analyzer-checker=security.GoshawkChecker -Xclang -analyzer-config -Xclang " \
-           "security.GoshawkChecker:MemFuncsDir={1} -Xclang -analyzer-config -Xclang security.GoshawkChecker:PathNumberFile={2} " \
-           "-Xclang -analyzer-config -Xclang security.GoshawkChecker:ExternFile={3}".format(analyzer_plugin, MemFuncDir, PathNumberFile, ExterFile)
+               "security.GoshawkChecker:MemFuncsDir={1} -Xclang -analyzer-config -Xclang security.GoshawkChecker:PathNumberFile={2} " \
+               "-Xclang -analyzer-config -Xclang security.GoshawkChecker:ExternFile={3}".format(analyzer_plugin,
+                                                                                                MemFuncDir,
+                                                                                                PathNumberFile,
+                                                                                                ExterFile)
     analyzer_cfg = config.temp_dir + os.sep + "static_analyzer.cfg"
     with open(analyzer_cfg, "w") as f:
         f.write(cfg_cmd)
@@ -232,6 +236,7 @@ def Step_4_Analyze():
     html_path = "output/report_html/index.html"
     cleaner = csa_report_cleaner(html_path)
     cleaner.clean()
+
 
 if __name__ == "__main__":
     Step_0_Cleanup()

@@ -1,9 +1,10 @@
 # Code Structure
->Clang Static analyzer plugins details see https://github.com/Yunlongs/NLP-CSA （Preparing）
+
 ## Directories
 - `data_process:` The scripts for pre-processing, parsing and normalizing the function prototypes.
 - `model:` Pre-trained Siamese network, can be directly used to classify functions.
 - `plugins:` Clang and CSA plugins used by Goshawk.
+- `plugins_src:` The source codes of Clang plugins.
 - `subword_dataset:`  The learned subword vocabulary and embedding for function prototype segmentation, and official MM function list.
 
 ## Main Scripts
@@ -44,7 +45,7 @@ The compilation commands will be recorded in the file of `compilation.json`.
 
 
 ## Ⅱ.B Run the full phases of Goshawk to analyze a target project.
->note: For large project, like linux kernel, you should guarantee that there is at less 300GB ROM on you hard disk.
+>note: For large project, like linux kernel, you should guarantee that there is at least 300GB ROM on you hard disk.
  
  Currently, you only need one command to analyze a project by Goshawk:
  
