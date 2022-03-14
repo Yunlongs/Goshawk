@@ -226,8 +226,8 @@ def Step_4_Analyze():
 
     print("\nParsing the detection result to html report!\n")
     os.system("clear")
-    print(cmd)
-    subprocess.call(cmd, shell=True)
+    print(parser_cmd)
+    subprocess.call(parser_cmd, shell=True)
 
     html_path = "output/report_html/index.html"
     cleaner = csa_report_cleaner(html_path)

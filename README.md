@@ -3,6 +3,7 @@
 ## Directories
 - `data_process:` The scripts for pre-processing, parsing and normalizing the function prototypes.
 - `model:` Pre-trained Siamese network, can be directly used to classify functions.
+- `plugins:` Clang and CSA plugins used by Goshawk.
 - `subword_dataset:`  The learned subword vocabulary and embedding for function prototype segmentation, and official MM function list.
 
 ## Main Scripts
@@ -50,7 +51,9 @@ The compilation commands will be recorded in the file of `compilation.json`.
  ```buildoutcfg
 python3 run.py target_project_path
 ```
-But you should make sure, there is a `compilation.json` file of your project under the `target_project_path`.
+But you should make sure that there is a `compilation.json` file of your project under the `target_project_path`.
+
+The MM functions and their corresponding MOSs will be generated at `output/alloc` and `output/free`. 
 
 The bug detection results will be generated at `output/report_html/index.html`.
 
