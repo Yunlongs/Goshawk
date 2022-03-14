@@ -14,7 +14,7 @@
 - `frontend_checker.py:` Validate the MM functions according the function prototype and data flow.
  
  
-## Ⅰ. Environment Setup
+# Ⅰ. Environment Setup
 ```buildoutcfg
 python 3.7+
 tensorflow = 2.1
@@ -28,8 +28,8 @@ You can install [CodeChecker](https://github.com/Ericsson/codechecker) from http
 
 You can install [Clang v10.0.1] from https://github.com/llvm/llvm-project/releases/tag/llvmorg-10.0.1.
 
-## Ⅱ. How to use
-### Ⅱ.A Record compilation commands of your target project.
+# Ⅱ. How to use
+## Ⅱ.A Record compilation commands of your target project.
 Before using this tool, 
 you need to record the compilation commands used by each file to compile the source code of the project, 
     and then the further analysis will be based on these compilation commands.
@@ -42,7 +42,7 @@ we can use the `log -b ` cmd to encapsulate the `make` related cmd to record the
 The compilation commands will be recorded in the file of `compilation.json`.
 
 
-### Ⅱ.B Run the full phases of Goshawk to analyze a target project.
+## Ⅱ.B Run the full phases of Goshawk to analyze a target project.
 >note: For large project, like linux kernel, you should guarantee that there is at less 300GB ROM on you hard disk.
  
  Currently, you only need one command to analyze a project by Goshawk:
@@ -55,8 +55,8 @@ But you should make sure, there is a `compilation.json` file of your project und
 The bug detection results will be generated at `output/report_html/index.html`.
 
 
-## Ⅲ Some beneficial components in Goshawk
-### Ⅲ.A Function Proatotype Segmentation
+# Ⅲ Some beneficial components in Goshawk
+## Ⅲ.A Function Proatotype Segmentation
 Function `normalize_prototype_file(in_file, out_file)` in `normalize.py` can be used to segment function prototypes.
 
 It Segments and normalizes the function prototypes in the `in_file`, and the results are saved at `out_file.`
@@ -68,8 +68,8 @@ For example,
 ```
 
 
-### Ⅲ.B Re-train Simaese network for your customized target function identification task (e.g.,MM functions, crypto functions,...).
-#### 1. Prepare your training function prototype dataset.
+## Ⅲ.B Re-train Simaese network for your customized target function identification task (e.g.,MM functions, crypto functions,...).
+### 1. Prepare your training function prototype dataset.
 
 Take crypto function as example, the dataset should be the prototypes of your collected crypto functions.
 Each line is a function prototype.
@@ -88,7 +88,7 @@ static int crypto_authenc_esn_decrypt(struct aead_request *req)
 ...
 ``` 
 
-#### 2. Train the Siamese network.
+### 2. Train the Siamese network.
 
 We have implemented the re-train of Siamese network in the script `Re-train.py`.
  It takes two arguments:
@@ -103,7 +103,7 @@ python Re-train.py crypto.txt crypto
 After the training finished, your trained model which names "crypto" is saved at directory "model/crypto".
 
 
-#### 3. Infer similarities.
+### 3. Infer similarities.
 
 The already trained model were saved in the directory "model", 
 you can use them to infer similarity for other functions directly.

@@ -234,8 +234,8 @@ def Step_4_Analyze():
     cleaner.clean()
 
 if __name__ == "__main__":
-    #Step_0_Cleanup()
-    #Step_1_Extract()
-    #Step_2_Allocation()
-    #Step_3_Free()
+    Step_0_Cleanup()
+    Step_1_Extract()
+    Step_2_Allocation()
+    Step_3_Free()
     Step_4_Analyze()
