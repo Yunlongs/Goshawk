@@ -35,6 +35,8 @@ def remake_new_dir(dir_name):
 def Step_0_Cleanup():
     print("Step0: Cleanup start!")
     remake_new_dir("temp")
+    if not os.path.exists("output"):
+        os.mkdir("output")
     remake_new_dir("output/alloc")
     remake_new_dir("output/free")
     remake_new_dir("temp/CSA")
