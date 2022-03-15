@@ -35,10 +35,8 @@ using namespace clang;
 using namespace ento;
 
 #define DebugMode false // if true, to dump some variables' state.
-std::string MemFuncsDir;
+
 #define AnalyzeMode "Customized"
-std::string PathNumberFile; //"/tmp/CSA/path_number"
-std::string ExternFile;  //"/tmp/CSA/extern"
 
 namespace{
 
@@ -127,12 +125,21 @@ public:
     MemFuncsUtility *MemFunc;
     std::string Mode;
     std::string Memfunc_dir;
+    std::string PathNumberFile;
+    std::string ExternFile;
 
     MemMisuseChecker(){
-        Memfunc_dir = MemFuncsDir;
+    }
+    
+    void init(std::string MemFuncsDir, std::string PathNumberFile, std::string ExternFile){
+        this->Memfunc_dir = MemFuncsDir;
+        this->PathNumberFile = PathNumberFile;
+        this->ExternFile = ExternFile;
         MemFunc = new MemFuncsUtility(Memfunc_dir);
         Mode = AnalyzeMode;
     }
+
+
     ~MemMisuseChecker(){
         delete MemFunc;
         write_number_line(extern_count,ExternFile);
@@ -1121,9 +1128,11 @@ PathDiagnosticPieceRef MemBugVisitor::VisitNode(const ExplodedNode *N,BugReporte
 
 void registerMemMisuseProChecker(CheckerManager &Mgr) {
     MemMisuseChecker *Checker = Mgr.registerChecker<MemMisuseChecker>();
-    MemFuncsDir = Mgr.getAnalyzerOptions().getCheckerStringOption(Checker, "MemFuncsDir");
-    PathNumberFile = Mgr.getAnalyzerOptions().getCheckerStringOption(Checker, "PathNumberFile");
-    ExternFile = Mgr.getAnalyzerOptions().getCheckerStringOption(Checker, "ExternFile");
+    std::string MemFuncsDir = Mgr.getAnalyzerOptions().getCheckerStringOption(Checker, "MemFuncsDir");
+    std::string PathNumberFile = Mgr.getAnalyzerOptions().getCheckerStringOption(Checker, "PathNumberFile");
+    std::string ExternFile = Mgr.getAnalyzerOptions().getCheckerStringOption(Checker, "ExternFile");
+    //llvm::errs()<<"This is an options:"<<MemFuncsDir<<"\n";
+    Checker->init(MemFuncsDir, PathNumberFile, ExternFile);
 }
 
 bool shouldRegisterMemMisuseProChecker(const LangOptions &LO) {return true;}

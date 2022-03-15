@@ -168,6 +168,8 @@ def retrive_next_step_TU(project_dir, call_graph, call_chains, curr_iter):
         if file in next_step_file:
             next_step_TU.append(TU)
 
+    if len(next_step_TU) == 0:
+        return None
     return next_step_TU
 
 
@@ -183,5 +185,5 @@ if __name__ == "__main__":
     call_graph = read_caller_and_callee(config.call_graph_path)
     call_graph = convert_call_graph_to_dict(call_graph)
     call_chains = MMD_call_chains(call_graph)
-    retrive_next_step_TU("temp", call_graph, call_chains, 2)
+    retrive_next_step_TU("temp", call_graph, call_chains, 0)
 # consume_skb	0	261

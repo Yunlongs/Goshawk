@@ -10,6 +10,10 @@ def deduplicate_dataflow(in_file, type=0):
     :param type: 0: pop the last <nops>, 1: don't need to pop.
     :return:
     """
+    if not os.path.exists(in_file):
+        print("\n Sorry, Goshawk have not obtained the data flows that the rest steps required."
+              "That might be there is no customized MM functions in your project.")
+        exit(-1)
     funcs = {}
     with open(in_file, "r") as f:
         for line in f.readlines():

@@ -40,7 +40,7 @@ def Step_0_Cleanup():
     remake_new_dir("output/alloc")
     remake_new_dir("output/free")
     remake_new_dir("temp/CSA")
-    delete_exist_file("output/report_html")
+    delete_exist_dir("output/report_html")
 
     print("Step0: Cleanup finished!")
     print("-----------------------------------------------\n------------------------------------\n")
@@ -140,10 +140,9 @@ def Step_3_Free():
         old_lines = get_nr_lines(config.mos_free_outpath)
         os.system("clear")
         flag = "point-memory-free-2"
+        len_next_TUs = 0 if next_step_TU is None else len(next_step_TU)
         print("Current iteration:\t", iteration, "\nCurrent number of lines:\t", old_lines, "\n number of TUs:\t",
-              len(next_step_TU))
-        if len(next_step_TU) == 0:
-            break
+              len_next_TUs)
         # input("pause... enter any key to continue..")
         os.rename(config.mos_free_outpath, config.mos_seed_path)
         next_step_TU = retrive_next_step_TU(project_dir, call_graph, call_chains, iteration)
