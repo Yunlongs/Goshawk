@@ -97,6 +97,8 @@ def Step_2_Allocation():
 
 
 def get_nr_lines(file):
+    if not os.path.exists(file):
+        return 0
     with open(file, "r") as f:
         lines = len(f.readlines())
     return lines
@@ -137,6 +139,8 @@ def Step_3_Free():
     # loop until all data flow are tracked (no extra MOS added).
     iteration = 1
     while 1:  # repeat until MOS information generation is converged
+        if iteration > config.max_iteration:
+            break
         old_lines = get_nr_lines(config.mos_free_outpath)
         os.system("clear")
         flag = "point-memory-free-2"
@@ -144,18 +148,20 @@ def Step_3_Free():
         print("Current iteration:\t", iteration, "\nCurrent number of lines:\t", old_lines, "\n number of TUs:\t",
               len_next_TUs)
         # input("pause... enter any key to continue..")
-        os.rename(config.mos_free_outpath, config.mos_seed_path)
+        if os.path.exists(config.mos_free_outpath):
+            os.rename(config.mos_free_outpath, config.mos_seed_path)
         next_step_TU = retrive_next_step_TU(project_dir, call_graph, call_chains, iteration)
         plugin_run(project_dir, flag, next_step_TU)
-        deduplicate_dataflow(config.mos_free_outpath)
+        ret_code = deduplicate_dataflow(config.mos_free_outpath)
+        if ret_code == -1:
+            break
         concat_two_file(config.mos_seed_path, config.mos_free_outpath)
         deduplicate_dataflow(config.mos_free_outpath, 1)
         new_lines = get_nr_lines(config.mos_free_outpath)
         if new_lines - old_lines == 0:
             break
         iteration += 1
-        if iteration > config.max_iteration:
-            break
+
 
     classify_free_data(config.mos_free_outpath)
     add_primitive_functions()

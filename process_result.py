@@ -11,9 +11,9 @@ def deduplicate_dataflow(in_file, type=0):
     :return:
     """
     if not os.path.exists(in_file):
-        print("\n Sorry, Goshawk have not obtained the data flows that the rest steps required."
+        print("\n Warning. Goshawk have not obtained the data flows that the rest steps required."
               "That might be there is no customized MM functions in your project.")
-        exit(-1)
+        return -1
     funcs = {}
     with open(in_file, "r") as f:
         for line in f.readlines():
@@ -140,6 +140,8 @@ def classify_alloc_data(param_file="temp/alloc/csa/AllocCustomizedFile.txt", out
 
 
 def classify_free_data(memory_flow_file, out_dir="output/free/"):
+    if not os.path.exists(memory_flow_file):
+        return
     only_param, only_member, param_member = 0, 0, 0
     FreeNormalFuncs = []
     with open(memory_flow_file, "r") as f:

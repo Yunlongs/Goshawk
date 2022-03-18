@@ -994,6 +994,9 @@ def run_alloc(in_file=config.call_graph_path, step=1):
     if step == 1:
         return
 
+    if not os.path.exists(config.mos_alloc_outpath):
+        write_final_alloc_result(belief_bitmaps)
+        return
     # step2: Check whether the allocation functions are strong belief functions.
     load_memory_flow(config.mos_alloc_outpath)
     belief_bitmaps = call_chain_check_2(func_similarity, call_graph, allocation_set, belief_bitmaps)
