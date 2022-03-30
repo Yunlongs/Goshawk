@@ -25,14 +25,17 @@ def Re_train_Model(file, model_new_name):
     print("-------------------------------------\n"
           "pre-process data start!\n\n")
     remake_new_dir("temp")
+    remake_new_dir("subword_dataset/training/target")
     temp_file = "temp" + os.sep + os.path.basename(file)
     shutil.copy(file, temp_file)
     convert_origin_to_prototype(temp_file)
     convert_prototype_to_json(temp_file)
     print("\n\n--------------------------------\n"
           "pre-process finished!")
-
-    normalize_two_files(temp_file, "subword_dataset/training/target.train")
+    shutil.copy("subword_dataset/training/neg.train", "subword_dataset/training/target/neg.train")
+    shutil.copy("subword_dataset/training/neg.valid", "subword_dataset/training/target/neg.valid")
+    shutil.copy("subword_dataset/training/neg.test", "subword_dataset/training/target/neg.test")
+    normalize_two_files(temp_file, "subword_dataset/training/target/target.train")
     train(model_new_name)
 
 
