@@ -139,15 +139,12 @@ def Step_3_Free():
     # loop until all data flow are tracked (no extra MOS added).
     iteration = 1
     while 1:  # repeat until MOS information generation is converged
-        if iteration > config.max_iteration:
-            break
         old_lines = get_nr_lines(config.mos_free_outpath)
         os.system("clear")
         flag = "point-memory-free-2"
         len_next_TUs = 0 if next_step_TU is None else len(next_step_TU)
         print("Current iteration:\t", iteration, "\nCurrent number of lines:\t", old_lines, "\n number of TUs:\t",
               len_next_TUs)
-        # input("pause... enter any key to continue..")
         if os.path.exists(config.mos_free_outpath):
             os.rename(config.mos_free_outpath, config.mos_seed_path)
         next_step_TU = retrive_next_step_TU(project_dir, call_graph, call_chains, iteration)
@@ -161,6 +158,8 @@ def Step_3_Free():
         if new_lines - old_lines == 0:
             break
         iteration += 1
+        if iteration > config.max_iteration:
+            break
 
 
     classify_free_data(config.mos_free_outpath)

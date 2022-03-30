@@ -1,27 +1,38 @@
 from data_proccess.get_label_data import convert_origin_to_prototype, convert_prototype_to_json
 from train import train
 from normalize import normalize_two_files
-import argparse
+import argparse,os,shutil
 
 parser = argparse.ArgumentParser(description='Retrain the NLP model for your purpose')
-parser.add_argument("training corpus", metavar="/xxx/crypto.txt", type= str,help="Collected training function prototype file.")
+parser.add_argument("training_file", metavar="/xxx/crypto.txt", type= str,help="Collected training function prototype file.")
 parser.add_argument("model_name", metavar="my_model",type= str, help="Name of the your retrained model")
 
 args = parser.parse_args()
-file = args.file
+file = args.training_file
 model_name = args.model_name
-inference = args.inference
+
+def delete_exist_dir(dir_name):
+    if os.path.exists(dir_name):
+        shutil.rmtree(dir_name)
+
+
+def remake_new_dir(dir_name):
+    delete_exist_dir(dir_name)
+    os.mkdir(dir_name)
 
 
 def Re_train_Model(file, model_new_name):
     print("-------------------------------------\n"
           "pre-process data start!\n\n")
-    convert_origin_to_prototype(file)
-    convert_prototype_to_json(file)
+    remake_new_dir("temp")
+    temp_file = "temp" + os.sep + os.path.basename(file)
+    shutil.copy(file, temp_file)
+    convert_origin_to_prototype(temp_file)
+    convert_prototype_to_json(temp_file)
     print("\n\n--------------------------------\n"
           "pre-process finished!")
 
-    normalize_two_files(file, "subword_dataset/training/target.train")
+    normalize_two_files(temp_file, "subword_dataset/training/target.train")
     train(model_new_name)
 
 
