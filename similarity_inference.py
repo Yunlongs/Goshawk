@@ -34,7 +34,7 @@ def calculate_similarity(target_embedding_file, link_func_string, link_func_name
     :return:
     """
     target_embedding = load_embedding_to_list(target_embedding_file)
-    mean_embedding = get_reference_embedding(model_name)
+    mean_embedding = get_reference_embedding(model_name).reshape((config.embedding_size,))
     result = ""
     func_cos_dict = {}
     func_name_cos_dict = {}
@@ -114,6 +114,11 @@ def get_model(model_name):
     model = tf.keras.models.load_model(config.model_dir + os.sep + model_name + os.sep + "maxauc_model")
     return model
 
+def similarity_inference(model_name, input_file):
+    import shutil
+    copy_file = config.temp_dir + os.sep + os.path.basename(input_file)
+    shutil.copy(input_file, copy_file)
+    working_on_raw_function_prototype(model_name, copy_file)
 
 if __name__ == "__main__":
     working_on_raw_function_prototype("alloc","subword_dataset/test.func")

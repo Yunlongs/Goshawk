@@ -114,7 +114,7 @@ you can use them to infer similarity for other functions directly.
 
 We have implemented these functions in the script `similarity_inference.py`.
 
-You can call the function `working_on_raw_function_prototype(model_name, filename)` to infer similarity
+You can call the function `similarity_inference(model_name, filename)` to infer similarity
 for the functions whose prototypes saved in the argument `filename`.
 
 Here, `model_name` should be the name of model that save in the directory `model`. 
@@ -128,10 +128,10 @@ void mem_free(void *ptr)
 void CAST_set_key(CAST_KEY *key, int len, const unsigned char *data)
 ```
 
-We can call the function `working_on_raw_function_prototype` to infer similarities for them.
+We can call the function `similarity_inference` to infer similarities for them.
 ```buildoutcfg
 from similarity_inference import working_on_raw_function_prototype
-working_on_raw_function_prototype("alloc", "test.func") # Infer the similarity for allocation functions.
+similarity_inference("alloc", "test.func") # Infer the similarity for allocation functions.
 ```
 The result are saved at "temp/func_name_similarity"
 ```buildoutcfg

@@ -232,6 +232,7 @@ def train(model_name, type="target", backbone = "Transformer"):
     if not os.path.exists(save_prefix):
         os.mkdir(save_prefix)
         os.system("cp config.py %s" % (save_prefix))
+        os.mkdir(save_prefix + os.sep + "embedding")
 
     learning_rate = CustomSchedule(config.d_model, config.warmup_steps)
     optimizer = tf.keras.optimizers.Adam(learning_rate=learning_rate)
@@ -292,7 +293,7 @@ def train(model_name, type="target", backbone = "Transformer"):
 
         if f1_score > max_f1score:
             max_f1score = f1_score
-            model.save(save_prefix + "maxauc_model")
+            model.save(save_prefix + os.sep + "maxauc_model")
 
         if epoch % 10 == 0:
             # model.save(save_prefix + "epoch_%s_model"%(epoch))
@@ -304,7 +305,7 @@ def train(model_name, type="target", backbone = "Transformer"):
         print("---------------------------\n epoch:%s Train_accuracy:%s Train_recall:%s Train_f1score:%s\n "
               % (epoch, accuracy, recall, f1_score))
     train_end = time.time()
-    with open(save_prefix + "cost_time", "w") as f:
+    with open(save_prefix + os.sep + "cost_time", "w") as f:
         f.write("total cost time:" + str(train_end - train_start))
     save_result(save_prefix, train_loss, train_accuracy, train_recall, train_f1score, valid_accuracy, valid_recall,
                 valid_f1score)
@@ -312,7 +313,7 @@ def train(model_name, type="target", backbone = "Transformer"):
 
 def save_result(save_prefix, train_loss, train_accuracy, train_recall, train_f1score, valid_accuracy, valid_recall,
                 valid_f1score):
-    image_prefix = save_prefix + "image/"
+    image_prefix = save_prefix + os.sep + "image/"
     if not os.path.exists(image_prefix):
         os.mkdir(image_prefix)
     text_prefix = save_prefix + "text/"

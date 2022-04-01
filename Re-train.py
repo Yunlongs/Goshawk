@@ -1,6 +1,7 @@
 from data_proccess.get_label_data import convert_origin_to_prototype, convert_prototype_to_json
 from train import train
 from normalize import normalize_two_files
+import config
 import argparse,os,shutil
 
 parser = argparse.ArgumentParser(description='Retrain the NLP model for your purpose')
@@ -37,6 +38,9 @@ def Re_train_Model(file, model_new_name):
     shutil.copy("subword_dataset/training/neg.test", "subword_dataset/training/target/neg.test")
     normalize_two_files(temp_file, "subword_dataset/training/target/target.train")
     train(model_new_name)
+    src_mean_embedding_file = "subword_dataset/training/target/mean_embedding.npy"
+    dst_mean_embedding_file = os.path.join(config.model_dir,model_name,"embedding", "mean_embedding.npy")
+    shutil.copy(src_mean_embedding_file,dst_mean_embedding_file)
 
 
 if __name__ == "__main__":
