@@ -28,7 +28,7 @@ Download the [subword embeddings](https://yunlongs-1253041399.cos.ap-chengdu.myq
 
 You can install [CodeChecker](https://github.com/Ericsson/codechecker) from https://github.com/Ericsson/codechecker.
 
-You can install [Clang v10.0.1] from https://github.com/llvm/llvm-project/releases/tag/llvmorg-10.0.1.
+You can install [Clang v10.0.1](https://github.com/llvm/llvm-project/releases/tag/llvmorg-10.0.1) from https://github.com/llvm/llvm-project/releases/tag/llvmorg-10.0.1.
 
 # Ⅱ. How to use
 ## Ⅱ.A Record compilation commands of your target project.
