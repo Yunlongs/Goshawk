@@ -193,7 +193,7 @@ def format_analyzer_command():
     PathNumberFile = MemFuncDir + os.sep + "path_number.txt"
     ExterFile = MemFuncDir + os.sep + "extern_count.txt"
 
-    cfg_cmd += " -Xclang -load -Xclang {0} -Xclang -analyze -Xclang -analyzer-checker=security.GoshawkChecker -Xclang -analyzer-config -Xclang " \
+    cfg_cmd += " -Xclang -load -Xclang {0} -Xclang -analyzer-checker=security.GoshawkChecker -Xclang -analyzer-config -Xclang " \
                "security.GoshawkChecker:MemFuncsDir={1} -Xclang -analyzer-config -Xclang security.GoshawkChecker:PathNumberFile={2} " \
                "-Xclang -analyzer-config -Xclang security.GoshawkChecker:ExternFile={3}".format(analyzer_plugin,
                                                                                                 MemFuncDir,
@@ -212,7 +212,7 @@ def format_analyzer_command():
     compilation_json = project_dir + os.sep + "compilation.json"
     ctu_cache = config.temp_dir + os.sep + "analyze_cache"
     cmd = analyzer_cmd + " analyze --analyzers clangsa -j{0} {1} --saargs {2} -d apiModeling -d cplusplus " \
-                         "-d nullability -d optin -d security -d unix -d valist -d deadcode -d core -d security.insecureAPI.rand " \
+                         "-d nullability -d optin -d valist -d deadcode -d security.insecureAPI.rand -d core -d unix " \
                          "--ctu --output {3}".format(cpu_count, compilation_json, analyzer_cfg, ctu_cache)
 
     report_path = "output/report_html"
