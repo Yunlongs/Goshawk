@@ -146,7 +146,7 @@ cast_set_key -0.9085114460471964
 ```
 ----
 
-# Cite
+# Citation
 We release Goshawk source code in the hope of benefiting others. If you find this project useful, please consider citing:
 ```buildoutcfg
 @INPROCEEDINGS {,
