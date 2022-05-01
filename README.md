@@ -149,7 +149,7 @@ cast_set_key -0.9085114460471964
 # Citation
 We release Goshawk source code in the hope of benefiting others. If you find this project useful, please consider citing:
 ```buildoutcfg
-@INPROCEEDINGS {,
+@INPROCEEDINGS {Goshawk,
 author = {Y. Lyu and Y. Fang and Y. Zhang and Q. Sun and S. Ma and E. Bertino and K. Lu and J. Li},
 booktitle = {2022 2022 IEEE Symposium on Security and Privacy (SP) (SP)},
 title = {Goshawk: Hunting Memory Corruptions via Structure-Aware and Object-Centric Memory Operation Synopsis},
