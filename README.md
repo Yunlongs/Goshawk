@@ -18,6 +18,7 @@
  
 # Ⅰ. Environment Setup
 ```buildoutcfg
+robin-map
 python 3.7+
 tensorflow = 2.1
 CodeChecker
@@ -25,6 +26,8 @@ Clang v10.0.1
 ```
 
 Download the [subword embeddings](https://yunlongs-1253041399.cos.ap-chengdu.myqcloud.com/word_embedding) to the directory `subword_dataset/word_embedding`.
+
+You can install [robin-map](https://github.com/Tessil/robin-map) from https://github.com/Tessil/robin-map.
 
 You can install [CodeChecker](https://github.com/Ericsson/codechecker) from https://github.com/Ericsson/codechecker.
 
@@ -140,4 +143,24 @@ temp/func_name_similarity
 mem_malloc 0.938829920833657
 mem_free -0.9019584597976495
 cast_set_key -0.9085114460471964
+```
+----
+
+# Cite
+We release Goshawk source code in the hope of benefiting others. If you find this project useful, please consider citing:
+```buildoutcfg
+@INPROCEEDINGS {,
+author = {Y. Lyu and Y. Fang and Y. Zhang and Q. Sun and S. Ma and E. Bertino and K. Lu and J. Li},
+booktitle = {2022 2022 IEEE Symposium on Security and Privacy (SP) (SP)},
+title = {Goshawk: Hunting Memory Corruptions via Structure-Aware and Object-Centric Memory Operation Synopsis},
+year = {2022},
+issn = {2375-1207},
+pages = {1566-1566},
+doi = {10.1109/SP46214.2022.00137},
+url = {https://doi.ieeecomputersociety.org/10.1109/SP46214.2022.00137},
+publisher = {IEEE Computer Society},
+address = {Los Alamitos, CA, USA},
+month = {may}
+}
+
 ```
