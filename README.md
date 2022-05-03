@@ -150,17 +150,34 @@ cast_set_key -0.9085114460471964
 We release Goshawk source code in the hope of benefiting others. If you find this project useful, please consider citing:
 ```buildoutcfg
 @INPROCEEDINGS {Goshawk,
-author = {Y. Lyu and Y. Fang and Y. Zhang and Q. Sun and S. Ma and E. Bertino and K. Lu and J. Li},
-booktitle = {2022 2022 IEEE Symposium on Security and Privacy (SP) (SP)},
-title = {Goshawk: Hunting Memory Corruptions via Structure-Aware and Object-Centric Memory Operation Synopsis},
-year = {2022},
-issn = {2375-1207},
-pages = {1566-1566},
-doi = {10.1109/SP46214.2022.00137},
-url = {https://doi.ieeecomputersociety.org/10.1109/SP46214.2022.00137},
-publisher = {IEEE Computer Society},
-address = {Los Alamitos, CA, USA},
-month = {may}
+    author = {Y. Lyu and Y. Fang and Y. Zhang and Q. Sun and S. Ma and E. Bertino and K. Lu and J. Li},
+    booktitle = {2022 2022 IEEE Symposium on Security and Privacy (SP) (SP)},
+    title = {Goshawk: Hunting Memory Corruptions via Structure-Aware and Object-Centric Memory Operation Synopsis},
+    year = {2022},
+    issn = {2375-1207},
+    pages = {1566-1566},
+    doi = {10.1109/SP46214.2022.00137},
+    url = {https://doi.ieeecomputersociety.org/10.1109/SP46214.2022.00137},
+    publisher = {IEEE Computer Society},
+    address = {Los Alamitos, CA, USA},
+    month = {may}
 }
+```
 
+If your research work is inspired by or benefits from the NLP based function similarity inference module in Goshawk, please also consider citing:
+
+```buildoutcfg
+@INPROCEEDINGS{SparrowHawk,
+    author = {Lyu, Yunlong and Gao, Wang and Ma, Siqi and Sun, Qibin and Li, Juanru},
+    title = {SparrowHawk: Memory Safety Flaw Detection via Data-Driven Source Code Annotation},
+    year = {2021},
+    isbn = {978-3-030-88322-5},
+    publisher = {Springer-Verlag},
+    address = {Berlin, Heidelberg},
+    url = {https://doi.org/10.1007/978-3-030-88323-2_7},
+    doi = {10.1007/978-3-030-88323-2_7},
+    booktitle = {Information Security and Cryptology: 17th International Conference, Inscrypt 2021, Virtual Event, August 12–14, 2021, Revised Selected Papers},
+    pages = {129–148},
+    numpages = {20},
+}
 ```
