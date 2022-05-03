@@ -12,9 +12,13 @@ Here are three steps to build them:
 add_subdirectory(ExtractFunctionPrototypes)
 add_subdirectory(FreeNullCheck)
 add_subdirectory(MemoryDataFlow)
-add_subdirectory(MemoryDataFree)
+add_subdirectory(MemoryDataFlowFree)
 ```
-- Change into the build directory of clang, and run the build command.
+- Change into the build directory of clang, and run the build command:
+- - `ninja ExtractFunctionPrototypes`
+- - `ninja FreeNullCheck`
+- - `ninja MemoryDataFlow`
+- - `ninja MemoryDataFlowFree`
 
 
 Finally, there are four corresponding .so files in the `lib` directory which in the build directory of clang. 
@@ -27,6 +31,7 @@ The analyzer, GoshawkAnalyzer, is build upon the engine of CSA. Same to clang pl
 ```buildoutcfg
 add_subdirectory(GoshawkAnalyzer)
 ```
-- Change into the build directory of clang, and run the build command.
+- Change into the build directory of clang, and run the build command:
+- - `ninja GoshawkAnalyzer`
 
 Finally, the GoshawkAnalyzer.so will be generated in the `lib` directory which in the build directory of clang.
