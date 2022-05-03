@@ -188,7 +188,7 @@ def format_analyzer_command():
 
     with open("subword_dataset/static_analyzer.cfg", "r") as f:
         cfg_cmd = f.read().strip()
-    analyzer_plugin = config.plugin_dir + os.sep + "GoshawkChecker.so"
+    analyzer_plugin = config.plugin_dir + os.sep + "GoshawkAnalyzer.so"
     MemFuncDir = config.temp_dir + os.sep + "CSA"
     PathNumberFile = MemFuncDir + os.sep + "path_number.txt"
     ExterFile = MemFuncDir + os.sep + "extern_count.txt"
