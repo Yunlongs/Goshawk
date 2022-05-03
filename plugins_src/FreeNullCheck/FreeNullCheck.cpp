@@ -120,11 +120,13 @@ namespace{
             else
             if (auto fd = dyn_cast<ValueDecl>(FD))
                 return fd->getNameAsString();
+            llvm::errs()<<"Error: Could not get the name of thif function:\t";FD->dump();llvm::errs()<<"\n";
+            return "";
     }
 
             bool isCallExpr(const Expr* expr){
             expr = expr->IgnoreCasts();
-            if(auto callExpr = dyn_cast<CallExpr>(expr)) return true;
+            if(dyn_cast<CallExpr>(expr)) return true;
             return false;
         }
 
@@ -217,7 +219,7 @@ namespace{
                         name = "." + current_name + name;
                     }
                 }
-                if (auto arraySubscriptExpr = dyn_cast<ArraySubscriptExpr>(current_stmt))
+                if (dyn_cast<ArraySubscriptExpr>(current_stmt))
                 {
                     name = "[i]" + name;
                 }
@@ -243,7 +245,7 @@ namespace{
             if (!member_vector.empty())
             {
                 std::string member_name;
-                for(int i=0;i<member_vector.size();i++)
+                for(size_t i=0;i<member_vector.size();i++)
                 {
                     auto memberExpr = member_vector[i];
                     member_name = getRecurrentFullName(memberExpr);
@@ -268,17 +270,6 @@ namespace{
                         if(stmt)workstack.push(stmt);
             }
             return "";
-        }
-
-    bool isMemberName(std::string name)
-        {
-            for (int i = 0; i < name.length(); i++)
-            {
-                if (name[i] == '.' || name[i] == '-')
-                    return true;
-            }
-
-            return false;
         }
 
     bool CheckCallExpr(const CallExpr* callExpr, std::set<std::pair<int,std::string>> &var_name_set, std::map<std::string, std::string> &param_func_map){
@@ -351,7 +342,7 @@ namespace{
         {
             if(debug)llvm::errs()<<"Result Size:\t"<<Result.size()<<"\n";
             std::string result = "";
-            for (int i=0;i<Result.size();i++)
+            for (size_t i=0;i<Result.size();i++)
             {
                 result += Result[i];
                 if(debug)llvm::errs()<<Result[i]<<"\n";
@@ -406,7 +397,6 @@ namespace{
                 Result.clear();
                 StmtWorkStack workstack;
                 workstack.push(funcBody);
-                bool flag = false;
                 while(!workstack.empty()){
                     auto current_stmt = workstack.pop();
                     if (auto callExpr = dyn_cast<CallExpr>(current_stmt))
@@ -432,8 +422,8 @@ namespace{
                     }
                 }
                 save_result(current_funcname);
-                return true;
             }
+            return true;
         }
 
     };
@@ -444,7 +434,7 @@ namespace{
     public:
         explicit NullCheckConsumer(ASTContext* Context) {}
 
-        virtual void HandleTranslationUnit(clang::ASTContext &Context) {
+        virtual void HandleTranslationUnit(clang::ASTContext &Context) override{
             Visitor.TraverseDecl(Context.getTranslationUnitDecl());
         }
     };

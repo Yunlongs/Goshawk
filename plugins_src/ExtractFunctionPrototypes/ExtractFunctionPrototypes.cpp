@@ -80,8 +80,8 @@ std::string get_last_word(const std::string s)
     std::string new_string ="";
     if(s.find(" *") != std::string::npos)
     {
-        int position = s.find(" *");
-        for(int i=0;i<position;i++)
+        size_t position = s.find(" *");
+        for(size_t i = 0; i < position; i++)
         {
             new_string += s[i];
         }
@@ -93,9 +93,9 @@ std::string get_last_word(const std::string s)
     
     if(new_string.find(' ') != std::string::npos)
     {
-        int position = new_string.find_last_of(' ');
+        size_t position = new_string.find_last_of(' ');
         std::string temp = "";
-        for(int i=position+1; i<new_string.length();i++)
+        for(size_t i = position+1; i < new_string.length(); i++)
         {
             temp += new_string[i];
         }
@@ -140,20 +140,20 @@ namespace {
             std::string type_string = type.getAsString();
             std::string ret_type = "";
             std::string params = "";
-            int i=0;
-            for(;i<type_string.length();i++)
+            size_t i=0;
+            for(; i < type_string.length(); i++)
             {
                 if(type_string[i] == '(')
                     break;
                 ret_type += type_string[i];
             }
-            for(;i<type_string.length();i++)
+            for(; i < type_string.length(); i++)
             {
                 if(type_string[i] == ')')
                     break;
             }
             i++;
-            for(i++;i<type_string.length();i++)
+            for(i++; i<type_string.length(); i++)
             {
                 params += type_string[i];
             }
@@ -161,7 +161,7 @@ namespace {
             std::vector<std::string> param_type;
             std::vector<std::string> param_name;
             std::string temp;
-            for(i = 0;i < params.length(); i++)
+            for(i = 0; i < params.length(); i++)
             {
                 
                 if(params[i] == ',' or params[i] == ')')
@@ -216,7 +216,6 @@ namespace {
                 if (!FD->isThisDeclarationADefinition()) return true;
 
                 std::ostringstream ostring;
-                SourceLocation begin1 = FD->getSourceRange().getBegin();
                 SourceRange sr = FD->getSourceRange();
                 PresumedLoc begin = SourceManager.getPresumedLoc(sr.getBegin());
                 PresumedLoc end = SourceManager.getPresumedLoc(sr.getEnd());
@@ -283,7 +282,7 @@ namespace {
         explicit PrintFunctionConsumer(CompilerInstance &Instance, std::set<std::string> ParsedTemplates)
         :Visitor(Instance,ParsedTemplates) {}
 
-        virtual void HandleTranslationUnit(clang::ASTContext &Context) {
+        virtual void HandleTranslationUnit(clang::ASTContext &Context) override{
             //llvm::errs()<<"HandleTranslationUnit!\n";
             Visitor.TraverseDecl(Context.getTranslationUnitDecl());
         }

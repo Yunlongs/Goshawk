@@ -315,7 +315,7 @@ namespace{
             if (!member_vector.empty())
             {
                 std::string member_name;
-                for(int i=0;i<member_vector.size();i++)
+                for(size_t i=0;i<member_vector.size();i++)
                 {
                     auto memberExpr = member_vector[i];
                     member_name = getRecurrentFullName(memberExpr);
@@ -344,7 +344,7 @@ namespace{
 
         std::string GetBaseName(std::string member_name){
             std::string basename = "";
-            for(int i=0;i<member_name.length();i++)
+            for(size_t i=0;i<member_name.length();i++)
             {
                 if (member_name[i] == '.' || member_name[i] == '-' || member_name[i] == '[') break;
                 basename += member_name[i];
@@ -355,7 +355,7 @@ namespace{
         std::string ChangeBaseName(std::string member_name,std::string new_basename)
         {
             std::string old_member_name;
-            int i;
+            size_t i;
             for(i=0;i < member_name.length();i++)
             {  
                 if (member_name[i] == '-' || member_name[i] == '.') break;
@@ -393,7 +393,7 @@ namespace{
 
         bool isMemberName(std::string name)
         {
-            for (int i = 0; i < name.length(); i++)
+            for (size_t i = 0; i < name.length(); i++)
             {
                 if (name[i] == '.' || name[i] == '-')
                     return true;
@@ -414,7 +414,7 @@ namespace{
             if (param_name.size())
             {
                 //for(std::string curr_name :param_name)
-                for (int i =0 ;i<param_name.size();i++)
+                for (size_t i =0 ;i<param_name.size();i++)
                 {
                     //int arg_index = GetArgIndex(CD, curr_name);
                     int arg_index = param_name[i];
@@ -439,7 +439,7 @@ namespace{
             }
 
             auto member_name_list = callee_func["member_name"];
-            for (int i =0; i<member_name_list.size(); i++)
+            for (size_t i =0; i<member_name_list.size(); i++)
             {
                 int arg_index = member_name_list[i];
                 std::string member_name = member_name_list[++i];
@@ -502,20 +502,6 @@ namespace{
 
             return false;
         }
-
-        int GetArgIndex(const FunctionDecl* FD, std::string param_name)
-        {
-            int index = 0;
-            for(auto param : FD->parameters())
-            {
-                if (param->getNameAsString() == param_name)
-                    return index;
-            }
-            return -1;
-        }
-
-
-       
 
         /**/
         bool CheckBinaryOperator(const BinaryOperator* binaryOperator,std::set<std::string> &var_name_set,std::set<std::string> &member_name_set,std::map<std::string,std::string> &name_map){
@@ -746,7 +732,7 @@ namespace{
             for(std::set<std::string>::iterator iter = member_name_set.begin(); iter != member_name_set.end(); iter++)
             {
                 std::string basename = GetBaseName(*iter);
-                for (int i=0;i<param_set.size();i++)
+                for (size_t i=0;i<param_set.size();i++)
                 {
                     if (param_set[i] == basename)
                     {
@@ -841,7 +827,7 @@ namespace{
     public:
         explicit MemoryDataFlowConsumer(ASTContext* Context) {}
 
-        virtual void HandleTranslationUnit(clang::ASTContext &Context) {
+        virtual void HandleTranslationUnit(clang::ASTContext &Context) override{
             //llvm::errs()<<"HandleTranslationUnit!\n";
             Visitor.TraverseDecl(Context.getTranslationUnitDecl());
         }

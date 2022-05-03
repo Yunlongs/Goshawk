@@ -5,9 +5,9 @@
     The works of data flow merge, validation and MOS generation are implementated in python scripts.
 */
 #include <utility>
-#include<sstream>
-#include<iostream>
-#include<fstream>
+#include <sstream>
+#include <iostream>
+#include <fstream>
 
 #include "clang/Frontend/FrontendPluginRegistry.h"
 #include "clang/AST/AST.h"
@@ -179,7 +179,7 @@ namespace{
 
         std::string GetBaseName(std::string member_name){
             std::string basename = "";
-            for(int i=0;i<member_name.length();i++)
+            for(size_t i=0;i<member_name.length();i++)
             {
                 if (member_name[i] == '.' || member_name[i] == '-') break;
                 basename += member_name[i];
@@ -253,6 +253,8 @@ namespace{
             else
             if (auto fd = dyn_cast<ValueDecl>(FD))
                 return fd->getNameAsString();
+            llvm::errs()<<"Error: Could not get the name of thif function:\t";FD->dump();llvm::errs()<<"\n";
+            return "";
         }
 
          std::string FindCallExpr(const Stmt* expr){
@@ -307,18 +309,17 @@ namespace{
                 auto current_stmt = workstack.pop();
                 if(auto unaryOperator = dyn_cast<UnaryOperator>(current_stmt))
                 {
-                    
                     std::string name = unaryOperator->getOpcodeStr(unaryOperator->getOpcode()).str();
-                    //llvm::errs()<<"unaryOperator:\t"<<name<<"\n";
                     if (name == "&")
                     return true;
                     else
                     return false;
                 }
                 for (auto stmt : current_stmt->children())
-                    {
-                        if(stmt)workstack.push(stmt); deepth++;break;
-                    }
+                {
+                    if(stmt)workstack.push(stmt); 
+                    deepth++;break;
+                }
                 
                 if(deepth >3)break;
             }
@@ -510,8 +511,8 @@ namespace{
                 {
                     ProcessACallee(funcBody,current_funcname,*callee_iter);
                 }
-                return true;
             }
+            return true;
         }
 
     };
@@ -523,7 +524,7 @@ namespace{
     public:
         explicit MemoryDataFlowConsumer(ASTContext* Context) {}
 
-        virtual void HandleTranslationUnit(clang::ASTContext &Context) {
+        virtual void HandleTranslationUnit(clang::ASTContext &Context) override{
             Visitor.TraverseDecl(Context.getTranslationUnitDecl());
         }
     };
