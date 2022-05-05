@@ -123,7 +123,7 @@ void MemFuncsUtility::InitFuncs()
     entry.kind = Customized;
 
     auto returned_objects = func_json["returned_object"];
-    for (int i=0; i < returned_objects.size(); i++)
+    for (size_t i=0; i < returned_objects.size(); i++)
     {
       std::string member_name = returned_objects[i];
       strip(member_name);
@@ -131,7 +131,7 @@ void MemFuncsUtility::InitFuncs()
     }
 
     auto param_objects = func_json["param_object"];
-    for (int i=0; i< param_objects.size(); i+=2)
+    for (size_t i=0; i< param_objects.size(); i+=2)
     {
       int arg_index =param_objects[i];
       std::string name = param_objects[i+1];
@@ -178,7 +178,7 @@ void MemFuncsUtility::InitFuncs()
     auto member_name_list = func["member_name"];
     struct FreeEntry entry;
     entry.kind = Customized;
-    for (int i=0; i<param_names.size(); i+=2)
+    for (size_t i=0; i<param_names.size(); i+=2)
     {
       int index = param_names[i];
       entry.ParamIndex.push_back(index);
@@ -332,7 +332,7 @@ void write_number(long long int num, const char* file)
     char buf[100];
 
     //read the num
-    read(fd,buf,100);
+    (void)read(fd,buf,100);
     std::string string_count = buf;
     ss<<string_count;
     ss>>count;
@@ -346,7 +346,7 @@ void write_number(long long int num, const char* file)
     ss.clear();
     const char* new_buf = string_count.data();
     lseek(fd,0,SEEK_SET);
-    write(fd,new_buf,100);
+    (void)write(fd,new_buf,100);
     //std::cout<<"write count:"<<count<<std::endl;
    // 释放锁
     lock.l_type = F_UNLCK;

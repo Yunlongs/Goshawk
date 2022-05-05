@@ -34,83 +34,84 @@
 using namespace clang;
 using namespace ento;
 
-#define DebugMode false // if true, to dump some variables' state.
+#define DebugMode true // if true, to dump some variables' state.
 
 #define AnalyzeMode "Customized"
 
 namespace{
 
-class MemSymState{
-    enum Kind{
-        Allocated,
-        Released
+    class MemSymState{
+        enum Kind{
+            Allocated,
+            Released
+        };
+
+        const Stmt* S;
+        Kind K;
+
+        MemSymState(const Stmt* S, Kind K):S(S),K(K){}
+
+    public:
+        bool isAllocated()const {return K==Allocated;}
+        bool isReleased()const { return K==Released;}
+        const Stmt *getStmt() const { return S; }
+        bool operator==(const MemSymState &X) const{
+            return X.K == K && X.S == S;
+        }
+        static MemSymState getAllocated(const Stmt* S){
+            return MemSymState(S,Allocated);
+        }
+        static MemSymState getReleased(const Stmt *S){
+            return MemSymState(S, Released);
+        }
+        void Profile(llvm::FoldingSetNodeID &ID) const {
+            ID.AddInteger(K);
+            ID.AddPointer(S);
+        }
+        LLVM_DUMP_METHOD void dump(raw_ostream &OS) const {
+            switch (K) {
+        #define CASE(ID) case ID: OS << #ID; break;
+            CASE(Allocated)
+            CASE(Released)
+            }
+        }
     };
 
-    const Stmt* S;
-    Kind K;
+    std::string getFunctionName(const Decl* FD){
+        if (auto fd = dyn_cast<FunctionDecl>(FD))
+            return fd->getNameAsString();
+        else
+        if (auto fd = dyn_cast<VarDecl>(FD))
+            return fd->getNameAsString();
+        else
+        if (auto fd = dyn_cast<ValueDecl>(FD))
+            return fd->getNameAsString();
+    }
 
-    MemSymState(const Stmt* S, Kind K):S(S),K(K){}
-
-public:
-    bool isAllocated()const {return K==Allocated;}
-    bool isReleased()const { return K==Released;}
-    const Stmt *getStmt() const { return S; }
-    bool operator==(const MemSymState &X) const{
-        return X.K == K && X.S == S;
-    }
-    static MemSymState getAllocated(const Stmt* S){
-        return MemSymState(S,Allocated);
-    }
-    static MemSymState getReleased(const Stmt *S){
-        return MemSymState(S, Released);
-    }
-    void Profile(llvm::FoldingSetNodeID &ID) const {
-        ID.AddInteger(K);
-        ID.AddPointer(S);
-    }
-      LLVM_DUMP_METHOD void dump(raw_ostream &OS) const {
-        switch (K) {
-    #define CASE(ID) case ID: OS << #ID; break;
-        CASE(Allocated)
-        CASE(Released)
-        }
-    }
-};
-
-std::string getFunctionName(const Decl* FD){
-    if (auto fd = dyn_cast<FunctionDecl>(FD))
-        return fd->getNameAsString();
-    else
-    if (auto fd = dyn_cast<VarDecl>(FD))
-        return fd->getNameAsString();
-    else
-    if (auto fd = dyn_cast<ValueDecl>(FD))
-        return fd->getNameAsString();
-}
-
-// If the Function declaration we can get, then we get this function's name;
-// In some case, such as function pointer:
-//     dev->free(buf);
-// we can't get where the 'free' pointer points to, so we get this pointer's name.
-std::string getCallExprName(const CallExpr* CE, CheckerContext &C){
-    std::string func_name = "";
-    const FunctionDecl *FD = C.getCalleeDecl(CE);
-    if (FD)
-    {
-        IdentifierInfo* II = FD->getIdentifier();
-        if(!II)
-        return "";
-        func_name = II->getName().str();
-    }
-    else
-    {
-        const Decl *D  = CE->getCalleeDecl();
-        if (!D)
+    // If the Function declaration we can get, then we get this function's name;
+    // In some case, such as function pointer:
+    //     dev->free(buf);
+    // we can't get where the 'free' pointer points to, so we get this pointer's name.
+    std::string getCallExprName(const CallExpr* CE, CheckerContext &C){
+        std::string func_name = "";
+        const FunctionDecl *FD = C.getCalleeDecl(CE);
+        if (FD)
+        {
+            IdentifierInfo* II = FD->getIdentifier();
+            if(!II)
             return "";
-        func_name = getFunctionName(D);
+            func_name = II->getName().str();
+        }
+        else
+        {
+            const Decl *D  = CE->getCalleeDecl();
+            if (!D)
+                return "";
+            func_name = getFunctionName(D);
+        }
+        return func_name;
     }
-    return func_name;
-}
+
 } // namespace end
 
 REGISTER_MAP_WITH_PROGRAMSTATE(RegionState, SymbolRef, MemSymState)
@@ -216,22 +217,22 @@ public:
 private:
   class StackHintGeneratorForReallocationFailed
       : public StackHintGeneratorForSymbol {
-  public:
-    StackHintGeneratorForReallocationFailed(SymbolRef S, StringRef M)
-        : StackHintGeneratorForSymbol(S, M) {}
+    public:
+        StackHintGeneratorForReallocationFailed(SymbolRef S, StringRef M)
+            : StackHintGeneratorForSymbol(S, M) {}
 
-    std::string getMessageForArg(const Expr *ArgE, unsigned ArgIndex) override {
-      // Printed parameters start at 1, not 0.
-      ++ArgIndex;
+        std::string getMessageForArg(const Expr *ArgE, unsigned ArgIndex) override {
+            // Printed parameters start at 1, not 0.
+            ++ArgIndex;
 
-      SmallString<200> buf;
-      llvm::raw_svector_ostream os(buf);
+            SmallString<200> buf;
+            llvm::raw_svector_ostream os(buf);
 
-      os << "Reallocation of " << ArgIndex << llvm::getOrdinalSuffix(ArgIndex)
-         << " parameter failed";
+            os << "Reallocation of " << ArgIndex << llvm::getOrdinalSuffix(ArgIndex)
+                << " parameter failed";
 
-      return os.str();
-    }
+            return std::string(os.str());
+        }
     };
 
 };
@@ -299,7 +300,6 @@ const FieldRegion* FindFinalRegion(const SubRegion* R, QualType Ty,std::string m
 const FieldRegion* MemMisuseChecker::FindFieldRegion(const SubRegion* R, QualType Ty,std::string member_name, 
                                 CheckerContext &C, const CallExpr* CE,unsigned &Count,ProgramStateRef &State)const
 {
-  SValBuilder &svalBuilder = C.getSValBuilder();
   const LocationContext *LCtx = C.getPredecessor()->getLocationContext();
   StoreManager &StoreMgr = C.getStoreManager();
   SymbolManager &SymMgr = C.getSymbolManager();
@@ -403,7 +403,7 @@ std::vector<std::string> MemMisuseChecker::ParserMemberName(std::string member_n
     return vector;
   
   std::string new_string;
-  for(int i = 0; i < member_names.length(); i++)
+  for(size_t i = 0; i < member_names.length(); i++)
   {
     if(member_names[i] == '.')
       {
@@ -481,8 +481,6 @@ ProgramStateRef MemMisuseChecker::ModelMallocCustomized(CheckerContext &C, const
     unsigned Count = C.blockCount();
     SValBuilder &svalBuilder = C.getSValBuilder();
     const LocationContext *LCtx = C.getPredecessor()->getLocationContext();
-    StoreManager &StoreMgr = C.getStoreManager();
-    MemRegionManager &mrMgr = StoreMgr.getRegionManager();
     
     // Check if this Call is valid.
     const Expr* expr = Call.getOriginExpr();
@@ -581,7 +579,7 @@ ProgramStateRef MemMisuseChecker::ModelMallocCustomized(CheckerContext &C, const
         if(DebugMode) {llvm::errs()<<"\n\n Process Parameter Member:\t"<<ParamMemberName<<"\n";}
         const Expr* ArgMem_expr = CE->getArg(MemberIndex);
         SVal ArgMemVal = C.getSVal(ArgMem_expr);
-        if (DebugMode){llvm::errs()<<"\ArgMemVal dump:\t";ArgMemVal.dump();llvm::errs()<<"\n";}
+        if (DebugMode){llvm::errs()<<"\nArgMemVal dump:\t";ArgMemVal.dump();llvm::errs()<<"\n";}
         if (!ArgMemVal.getAsRegion())
             return nullptr;
         auto R = ArgMemVal.getAsRegion()->getAs<SubRegion>();
@@ -599,28 +597,6 @@ ProgramStateRef MemMisuseChecker::ModelMallocCustomized(CheckerContext &C, const
     return State;
 }
 
-
-/*
-*/
-ProgramStateRef MemMisuseChecker::CreateHeapSymValForFree(CheckerContext &C, const Expr* ArgExpr, ProgramStateRef State) const
-{
-    unsigned Count = C.blockCount();
-    SValBuilder &svalBuilder = C.getSValBuilder();
-    const LocationContext *LCtx = C.getPredecessor()->getLocationContext();
-    DefinedSVal RetVal = svalBuilder.getConjuredHeapSymbolVal(ArgExpr, LCtx, Count)    
-      .castAs<DefinedSVal>();
-
-      // Fill the region with the initialization value.
-    State = State->bindDefaultInitial(RetVal, UndefinedVal(), LCtx);
-    State = State->BindExpr(ArgExpr, C.getLocationContext(), RetVal);
-  
-    if(!RetVal.getAs<Loc>())
-        return nullptr;
-
-    SymbolRef Sym = RetVal.getAsLocSymbol();
-    assert(Sym);
-    return State->set<RegionState>(Sym,MemSymState::getReleased(ArgExpr));
-}
 
 ProgramStateRef MemMisuseChecker::ModelFreeNormal(CheckerContext &C, const CallEvent &Call, ProgramStateRef State)const{
 
@@ -776,7 +752,7 @@ ProgramStateRef MemMisuseChecker::ModelFreeCustomized(CheckerContext &C, const C
             QualType ArgTy = ArgExpr->getType()->getCanonicalTypeUnqualified();
             auto R = ArgRegion;
             auto Ty = ArgTy;
-            for (int i = 1; i < member_vector.size(); i++)// because element at 0,is basename.
+            for (size_t i = 1; i < member_vector.size(); i++)// because element at 0,is basename.
             {
                 const FieldRegion* FR = FindFinalRegion(R, Ty, member_vector[i], C);
                 if (!FR)
@@ -828,32 +804,44 @@ ProgramStateRef MemMisuseChecker::ModelReallocMem(CheckerContext &C, const CallE
     if(!CE)
         return nullptr;
     
-    
+    if(DebugMode) {llvm::errs()<<"Enter a realloc function\n";}
+
     // If the number of arguments less than 2, it could not be a realloc function.
     if (CE->getNumArgs()<2)
         return nullptr;
     
     const Expr *arg0Expr = CE->getArg(0);
+    if(DebugMode) {llvm::errs()<<"Arg0Expr dump:";arg0Expr->dump();llvm::errs()<<"\n";}
     SVal Arg0Val = C.getSVal(arg0Expr);
     if (!Arg0Val.getAs<DefinedOrUnknownSVal>())
         return nullptr;
+    QualType ptrTy = Arg0Val.getAsSymbol()->getType();
+
     DefinedOrUnknownSVal arg0Val = Arg0Val.castAs<DefinedOrUnknownSVal>();
 
     SValBuilder &svalBuilder = C.getSValBuilder();
 
     DefinedOrUnknownSVal PtrEQ =
-        svalBuilder.evalEQ(State, arg0Val, svalBuilder.makeNull());
+        svalBuilder.evalEQ(State, arg0Val, svalBuilder.makeNullWithType(ptrTy));
 
     const Expr *Arg1 = CE->getArg(1);
+    if(DebugMode) {llvm::errs()<<"Arg1Expr dump:";Arg1->dump();llvm::errs()<<"\n";}
+
     // Get the value of the size argument.
     SVal TotalSize = C.getSVal(Arg1);
     if (!TotalSize.getAs<DefinedOrUnknownSVal>())
-    return nullptr;
+        return nullptr;
+
+    if (!TotalSize.getAsSymbol())
+        return nullptr;
+    QualType sizeTy = TotalSize.getAsSymbol()->getType();
+    if (DebugMode){llvm::errs()<<"size type:\t";sizeTy.dump();llvm::errs()<<"\n";}
 
     // Compare the size argument to 0.
     DefinedOrUnknownSVal SizeZero =
     svalBuilder.evalEQ(State, TotalSize.castAs<DefinedOrUnknownSVal>(),
-                       svalBuilder.makeIntValWithPtrWidth(0, false));
+                       svalBuilder.makeIntValWithWidth(sizeTy, 0));
+    if (DebugMode){llvm::errs()<<"Compare the size argument to 0.";}
 
     ProgramStateRef StatePtrIsNull, StatePtrNotNull;
     std::tie(StatePtrIsNull, StatePtrNotNull) = State->assume(PtrEQ);
@@ -1028,8 +1016,6 @@ void MemMisuseChecker::printState(raw_ostream &Out, ProgramStateRef State,
   if (!RS.isEmpty()) {
     Out << Sep << "LoccsChecker :" << NL;
     for (RegionStateTy::iterator I = RS.begin(), E = RS.end(); I != E; ++I) {
-      const MemSymState* RefS = State->get<RegionState>(I.getKey());
-
       I.getKey()->dumpToStream(Out);
       Out << " : ";
       I.getData().dump(Out);
@@ -1128,23 +1114,23 @@ PathDiagnosticPieceRef MemBugVisitor::VisitNode(const ExplodedNode *N,BugReporte
 
 void registerMemMisuseProChecker(CheckerManager &Mgr) {
     MemMisuseChecker *Checker = Mgr.registerChecker<MemMisuseChecker>();
-    std::string MemFuncsDir = Mgr.getAnalyzerOptions().getCheckerStringOption(Checker, "MemFuncsDir");
-    std::string PathNumberFile = Mgr.getAnalyzerOptions().getCheckerStringOption(Checker, "PathNumberFile");
-    std::string ExternFile = Mgr.getAnalyzerOptions().getCheckerStringOption(Checker, "ExternFile");
+    std::string MemFuncsDir = std::string(Mgr.getAnalyzerOptions().getCheckerStringOption(Checker, "MemFuncsDir"));
+    std::string PathNumberFile = std::string(Mgr.getAnalyzerOptions().getCheckerStringOption(Checker, "PathNumberFile"));
+    std::string ExternFile = std::string(Mgr.getAnalyzerOptions().getCheckerStringOption(Checker, "ExternFile"));
     //llvm::errs()<<"This is an options:"<<MemFuncsDir<<"\n";
     Checker->init(MemFuncsDir, PathNumberFile, ExternFile);
 }
 
-bool shouldRegisterMemMisuseProChecker(const LangOptions &LO) {return true;}
+bool shouldRegisterMemMisuseProChecker(const CheckerManager &mgr) {return true;}
 
 
 // Register plugin!
 extern "C" void clang_registerCheckers(CheckerRegistry &registry) {
     registry.addChecker(registerMemMisuseProChecker,shouldRegisterMemMisuseProChecker,
       "security.GoshawkChecker", "Detect DoubleFree, UAF by MOS.","",false);
-    registry.addCheckerOption("string", "security.GoshawkChecker", "MemFuncsDir","/tmp/CSA","The directory that store the MOS.","finished");
-    registry.addCheckerOption("string", "security.GoshawkChecker", "PathNumberFile","/tmp/CSA/path_number","The path of file to save the number of paths that analyzed.","finished");
-    registry.addCheckerOption("string", "security.GoshawkChecker", "ExternFile","/tmp/CSA/extern_number","The number of MOS funcs that be modeled.","finished");
+    registry.addCheckerOption("string", "security.GoshawkChecker", "MemFuncsDir","/tmp/CSA","The directory that store the MOS.","alpha");
+    registry.addCheckerOption("string", "security.GoshawkChecker", "PathNumberFile","/tmp/CSA/path_number","The path of file to save the number of paths that analyzed.","alpha");
+    registry.addCheckerOption("string", "security.GoshawkChecker", "ExternFile","/tmp/CSA/extern_number","The number of MOS funcs that be modeled.","alpha");
     
 
 }

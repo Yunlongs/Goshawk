@@ -3,9 +3,9 @@ set(LLVM_LINK_COMPONENTS
   )
 
 set(LLVM_EXPORTED_SYMBOL_FILE ${CMAKE_CURRENT_SOURCE_DIR}/GoshawkChecker.exports)
-add_llvm_library(GoshawkChecker MODULE BUILDTREE_ONLY GoshawkChecker.cpp PLUGIN_TOOL clang)
+add_llvm_library(GoshawkAnalyzer MODULE BUILDTREE_ONLY GoshawkChecker.cpp PLUGIN_TOOL clang)
 
-clang_target_link_libraries(GoshawkChecker PRIVATE
+clang_target_link_libraries(GoshawkAnalyzer PRIVATE
   clangAnalysis
   clangAST
   clangStaticAnalyzerCore

@@ -1,3 +1,6 @@
+# News
+- Goshawk now supports Clang-15.0.0
+
 # Code Structure
 
 ## Directories
@@ -22,7 +25,7 @@ robin-map
 python 3.7+
 tensorflow = 2.1
 CodeChecker
-Clang v10.0.1
+Clang v15.0.0
 ```
 
 Download the [subword embeddings](https://yunlongs-1253041399.cos.ap-chengdu.myqcloud.com/word_embedding) to the directory `subword_dataset/word_embedding`.
@@ -31,7 +34,8 @@ You can install [robin-map](https://github.com/Tessil/robin-map) from https://gi
 
 You can install [CodeChecker](https://github.com/Ericsson/codechecker) from https://github.com/Ericsson/codechecker.
 
-You can install [Clang v10.0.1](https://github.com/llvm/llvm-project/releases/tag/llvmorg-10.0.1) from https://github.com/llvm/llvm-project/releases/tag/llvmorg-10.0.1.
+As Clang-15.0.0 is still developing and there is not a released version, thus I provide the version that I had used. 
+You can download this version of Clang-15.0.0 form [this link](https://yunlongs-1253041399.cos.ap-chengdu.myqcloud.com/llvm-project-main.zip), and compile a clang by yourself.
 
 # Ⅱ. How to use
 ## Ⅱ.A Record compilation commands of your target project.
