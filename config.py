@@ -63,7 +63,7 @@ func_name_sim_path = "temp/func_name_similarity"
 # Frontend Checker config
 strong_belief_threshold = 0.95
 #min_call = 10
-min_reset = 20 # kernel for 20, others for 2
+min_reset = 50 # kernel for 20, others for 2
 
 
 import os
