@@ -113,6 +113,8 @@ bool read_free_function()
     {
         std::string func_name;
         in_file>>func_name;
+	if (func_name.length() == 0)
+		break;
         int index;
         in_file>>index;
         seed_free_map.insert(std::pair<std::string,int>(func_name,index));

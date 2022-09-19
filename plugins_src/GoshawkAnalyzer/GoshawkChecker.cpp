@@ -635,6 +635,7 @@ ProgramStateRef MemMisuseChecker::ModelFreeNormal(CheckerContext &C, const CallE
     SVal ArgVal = State->getSVal(freed_arg,LCtx);
     if (!ArgVal.getAs<DefinedOrUnknownSVal>())
         return nullptr;
+    if (DebugMode) {llvm::errs()<<"\n ArgSval:\t";ArgVal.dump();llvm::errs()<<"\n";}
     const MemRegion *R = ArgVal.getAsRegion();
     if (!R)
         return nullptr;
@@ -642,14 +643,21 @@ ProgramStateRef MemMisuseChecker::ModelFreeNormal(CheckerContext &C, const CallE
 
     R = R->StripCasts();
     if(DebugMode) {llvm::errs()<<"\n After Strip:\t";R->dump(); llvm::errs()<<"\n";} 
-
-    const SymbolicRegion *SrBase = dyn_cast<SymbolicRegion>(R->getBaseRegion());
-    if (!SrBase)
+    const SymbolicRegion* SR = dyn_cast<SymbolicRegion>(R);
+    if (!SR)
         return nullptr;
-    if(DebugMode) {llvm::errs()<<"\n Get BaseRegion:\t";SrBase->dump(); llvm::errs()<<"\n";} 
+    if (DebugMode){llvm::errs()<<"\n SymbolicRegion:\t";SR->dump();llvm::errs()<<"\n";}
+    //const SymbolicRegion *SrBase = dyn_cast<SymbolicRegion>(R->getBaseRegion());
+    //if (!SrBase)
+    //    return nullptr;
+    //if(DebugMode) {llvm::errs()<<"\n Get BaseRegion:\t";SrBase->dump(); llvm::errs()<<"\n";} 
 
 
-    SymbolRef SymBase = SrBase->getSymbol();
+
+
+    SymbolRef SymBase = SR->getSymbol();
+    //SymbolRef SymBase = ArgVal.getAsSymbol();
+
     if(DebugMode) {llvm::errs()<<"\n Get Base Sym:\t";SymBase->dump(); llvm::errs()<<"\n";} 
     const MemSymState *RsBase = State->get<RegionState>(SymBase);
     if (!RsBase)
@@ -993,7 +1001,7 @@ void MemMisuseChecker::checkDeadSymbols(SymbolReaper &SymReaper, CheckerContext 
     for (RegionStateTy::iterator I = RS.begin(), E = RS.end(); I != E; ++I) {
         if (SymReaper.isDead(I->first)) {
         // Remove the dead symbol from the map.
-        RS = F.remove(RS, I->first);
+            RS = F.remove(RS, I->first);
         }
     }
 }

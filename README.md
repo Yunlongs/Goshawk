@@ -34,8 +34,7 @@ You can install [robin-map](https://github.com/Tessil/robin-map) from https://gi
 
 You can install [CodeChecker](https://github.com/Ericsson/codechecker) from https://github.com/Ericsson/codechecker.
 
-As Clang-15.0.0 is still developing and there is not a released version, thus I provide the version that I had used. 
-You can download this version of Clang-15.0.0 form [this link](https://yunlongs-1253041399.cos.ap-chengdu.myqcloud.com/llvm-project-main.zip), and compile a clang by yourself.
+You can download the version of Clang-15.0.0 form [this link](https://github.com/llvm/llvm-project/releases/tag/llvmorg-15.0.0), or compile a clang-15.0.0 by yourself.
 
 # Ⅱ. How to use
 ## Ⅱ.A Record compilation commands of your target project.
