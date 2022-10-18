@@ -1,5 +1,5 @@
 from parse_call_graph import remove_dup_caller
-from auto_extract_func import plugin_run
+from auto_extract_func import plugin_run, rm_err_flag
 import os, time, config, shutil, subprocess
 import argparse
 from frontend_checker import run_alloc, run_free
@@ -41,7 +41,12 @@ def Step_0_Cleanup():
     remake_new_dir("output/free")
     remake_new_dir("temp/CSA")
     delete_exist_dir("output/report_html")
-
+    compile_database_file = project_dir + os.sep + "compilation.json"
+    if not os.path.exists(compile_database_file):
+        print("\ncompile database not exist! Please make sure that there is a compilation.json under the project "
+              "directory!\n")
+        exit(-1)
+    rm_err_flag(compile_database_file)
     print("Step0: Cleanup finished!")
     print("-----------------------------------------------\n------------------------------------\n")
 

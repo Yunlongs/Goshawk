@@ -1,6 +1,6 @@
 # Clang plugins and analyzers
 
-## Building Clang plugins
+## Manually building Clang plugins
 The four plugins: ExtractFunctionPrototypes, FreeNullCheck, MemoryDataFlow and MemoryDataFree are used to 
     parse the source codes. 
 
@@ -35,3 +35,7 @@ add_subdirectory(GoshawkAnalyzer)
 - - `ninja GoshawkAnalyzer`
 
 Finally, the GoshawkAnalyzer.so will be generated in the `lib` directory which in the build directory of clang.
+
+## Automatically building these plugins
+Run the follow scripts will automatically build and replace these plugins.
+`python3 auto_build.py clang_dir clang_build_dir`

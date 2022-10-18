@@ -91,3 +91,6 @@ max_iteration = 15
 # temporary files
 free_check_file = "temp/free_check.txt"
 time_record_file = "temp/time_record.txt"
+
+# Error compilation flags
+comp_err_flags = ["-D__GENKSYMS__"]
