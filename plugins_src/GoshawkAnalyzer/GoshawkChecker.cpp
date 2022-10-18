@@ -34,7 +34,7 @@
 using namespace clang;
 using namespace ento;
 
-#define DebugMode true // if true, to dump some variables' state.
+#define DebugMode false // if true, to dump some variables' state.
 
 #define AnalyzeMode "Customized"
 

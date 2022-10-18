@@ -15,6 +15,14 @@ def dir_shell(dir, cmd):
     print(cmd)
     subprocess.call(cmd, timeout=120, shell=True)
 
+def rm_err_flag(compile_database_file):
+    with open(compile_database_file, "r") as f:
+        data = f.read()
+    for flag in config.comp_err_flags:
+        data = data.replace(flag, "")
+    with open(compile_database_file, "w") as f:
+        f.write(data)
+
 
 def AddFreePluginArg(arg):
     return " -Xclang -plugin-arg-point-memory-free -Xclang " + arg
@@ -86,10 +94,7 @@ def plugin_run(project_dir, flag, next_setp_TU=None):
     os.system("touch %s" % config.visited_file_path)
 
     compile_database_file = project_dir + os.sep + "compilation.json"
-    if not os.path.exists(compile_database_file):
-        print("\ncompile database not exist! Please make sure that there is a compilation.json under the project "
-              "directory!\n")
-        exit(-1)
+
     walking_compile_database(compile_database_file, flag, next_setp_TU=next_setp_TU)
 
 
