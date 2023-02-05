@@ -1,4 +1,5 @@
 # News
+- Add bug list
 - Goshawk now supports Clang-15.0.0
 
 # Found bug list
