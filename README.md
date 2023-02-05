@@ -1,6 +1,11 @@
 # News
 - Goshawk now supports Clang-15.0.0
 
+# Found bug list
+
+To see bugs found by Goshawk, visit [bug_list](bug_list.md) page. You can also see some details about the bugs found by Goshawk.
+
+
 # Code Structure
 
 ## Directories
