@@ -3,3 +3,4 @@ __pycache__/
 output/
 temp/
 subword_dataset/word_embedding
+.vs

@@ -1,4 +1,4 @@
-# 🏆 Bug List
+	# 🏆 Bug List
 
 The showcase of bugs found by *Goshawk* serves a variety of purpose:
 - Show the effect of the summarize-base memory corruption bug detection (i.e., Goshawk mitigate the path explosion problem of static symbolic execution via memory operation synopsis).
@@ -98,6 +98,8 @@ https://github.com/openssl/openssl/issues/14915
 https://github.com/openssl/openssl/issues/14916
 
 https://github.com/openssl/openssl/issues/14914
+
+https://github.com/openssl/openssl/issues/20278
 
 ## Redis
 https://github.com/redis/redis/issues/8797

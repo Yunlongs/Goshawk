@@ -1,0 +1,8 @@
+{
+  "OutputFoldersPerTargetSystem": {
+    "本地计算机": [
+      "plugins_src\\MemoryDataFlowFree\\out\\build\\x64-Debug",
+      "plugins_src\\MemoryDataFlowFree\\out\\install\\x64-Debug"
+    ]
+  }
+}
