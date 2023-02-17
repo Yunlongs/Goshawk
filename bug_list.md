@@ -99,5 +99,9 @@ https://github.com/openssl/openssl/issues/14916
 
 https://github.com/openssl/openssl/issues/14914
 
+https://github.com/openssl/openssl/issues/20278
+
+https://github.com/openssl/openssl/issues/20299
+
 ## Redis
 https://github.com/redis/redis/issues/8797
