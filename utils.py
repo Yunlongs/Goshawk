@@ -23,6 +23,8 @@ def argmax(indexs):
 
 def cleanup_free_null_check(file):
     func_maps = {}
+    if not os.path.exists(file):
+        return
     with open(file) as f:
         for line in f.readlines():
             if len(line) <= 4:

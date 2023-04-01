@@ -683,6 +683,8 @@ def filter_out_untruth(func_freq,min_reset,topk):
 
 def parse_param_reassignment(file):
     func = {}
+    if not os.path.exists(file):
+        return func
     with open(file,"r") as f:
         for line in f.readlines():
             funcname,index,number = line.split()
@@ -922,7 +924,7 @@ def run_free(call_graph_file, step=1):
         generate_seed_free(sp_funcs)
         call_chains = MMD_call_chains(call_graph)
         return call_graph, call_chains
-    # step1 : Find the initial strong belief allocation functions
+    # step1 : Find the initial strong belief deallocation functions
     candidate_functions = initial_candidate_free_function(func_similarity, call_graph)
     count_free_call_site(candidate_functions, call_graph)
 
