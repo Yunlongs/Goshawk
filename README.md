@@ -1,4 +1,5 @@
 # News
+- Docker build support!
 - Add bug list
 - Goshawk now supports Clang-15.0.0
 
@@ -26,6 +27,16 @@ To see bugs found by Goshawk, visit [bug_list](bug_list.md) page. You can also s
  
  
 # Ⅰ. Environment Setup
+## Ⅰ.A Docker build (recommended)
+Directly use our image released on DockerHub:
+```
+docker pull cascadessjtu/goshawk
+```
+Or build docker image by yourself:
+```
+Docker build -t goshawk .
+```
+## Ⅰ.B Manually configurate
 ```buildoutcfg
 robin-map
 python 3.7+
