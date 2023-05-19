@@ -33,7 +33,8 @@ def cleanup_free_null_check(file):
             index = int(index)
             if func_maps.get(func) is None:
                 func_maps[func] = [0, 0, 0, 0, 0, 0, 0]
-            print(func)
+            if (index >= len(func_maps[func])):
+                continue
             func_maps[func][index] += 1
 
     new_map = {}
