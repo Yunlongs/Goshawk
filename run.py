@@ -216,7 +216,7 @@ def format_analyzer_command():
     cpu_count = multiprocessing.cpu_count()
     compilation_json = project_dir + os.sep + "compilation.json"
     ctu_cache = config.temp_dir + os.sep + "analyze_cache"
-    cmd = analyzer_cmd + " analyze --analyzers clangsa -j{0} {1} --saargs {2} -d apiModeling -d cplusplus " \
+    cmd = analyzer_cmd + " analyze --analyzers clangsa -j{0} {1} --saargs {2}  -d cplusplus " \
                          "-d nullability -d optin -d valist -d deadcode -d security.insecureAPI.rand -d core -d unix " \
                          "--ctu --output {3}".format(cpu_count, compilation_json, analyzer_cfg, ctu_cache)
 
