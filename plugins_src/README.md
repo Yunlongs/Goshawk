@@ -1,6 +1,9 @@
 # Clang plugins and analyzers
 
 ## Manually building Clang plugins
+
+Firstly，to check out the source code and build the project, follow steps 1-4 of the [Clang Getting Started page](https://clang.llvm.org/get_started.html).
+
 The four plugins: ExtractFunctionPrototypes, FreeNullCheck, MemoryDataFlow and MemoryDataFree are used to 
     parse the source codes. 
 
