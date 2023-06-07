@@ -27,14 +27,14 @@ To see bugs found by Goshawk, visit [bug_list](bug_list.md) page. You can also s
  
  
 # Ⅰ. Environment Setup
-## Ⅰ.A Docker build (recommended)
+## Ⅰ.A Docker build (recommend)
 Directly use our image released on DockerHub:
 ```
 docker pull cascadessjtu/goshawk
 ```
 Or build docker image by yourself:
 ```
-Docker build -t goshawk .
+docker build -t goshawk .
 ```
 ## Ⅰ.B Manually configurate
 ```buildoutcfg
