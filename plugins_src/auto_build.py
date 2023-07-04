@@ -1,15 +1,20 @@
+#!/usr/bin/python3
 import argparse
 import shutil, os, platform
 from distutils.version import StrictVersion
-parser = argparse.ArgumentParser(description='Automatically put the plugins source codes into the plugins directory in clang.')
-parser.add_argument("clang_dir", metavar="/xxx/llvm-project/clang", type=str, help="The path of the clang source code directory.")
-parser.add_argument("build_dir", metavar="/xxx/llvm-project/build", type=str, help="The build path of the llvm and clang source code.")
 
-
-
-args = parser.parse_args()
-clang_dir = args.clang_dir
-build_dir = args.build_dir
+if os.environ.get("LLVM_PATH") is not None:
+    LLVM_PATH = os.environ["LLVM_PATH"]
+    clang_dir = os.path.join(LLVM_PATH, "clang")
+    build_dir = os.path.join(LLVM_PATH, "build")
+else:
+    parser = argparse.ArgumentParser(description='Automatically put the plugins source codes into the plugins directory in clang.')
+    parser.add_argument("clang_dir", metavar="/xxx/llvm-project/clang", type=str, help="The path of the clang source code directory.")
+    parser.add_argument("build_dir", metavar="/xxx/llvm-project/build", type=str, help="The build path of the llvm and clang source code.")
+    args = parser.parse_args()
+    clang_dir = args.clang_dir
+    build_dir = args.build_dir
+    
 curr_dir = os.getcwd()
 
 def delete_exist_dir(dir_name):
@@ -19,6 +24,7 @@ def delete_exist_dir(dir_name):
 if not os.path.exists(clang_dir):
     print("The clang directory does not exist!")
     exit(1)
+
 if StrictVersion(platform.python_version()) >= StrictVersion("3.8.14"):
     shutil.copytree("ExtractFunctionPrototypes", os.path.join(clang_dir, "examples/ExtractFunctionPrototypes"), dirs_exist_ok=True)
     shutil.copytree("FreeNullCheck", os.path.join(clang_dir, "examples/FreeNullCheck"), dirs_exist_ok=True)
