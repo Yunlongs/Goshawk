@@ -823,7 +823,13 @@ ProgramStateRef MemMisuseChecker::ModelReallocMem(CheckerContext &C, const CallE
     SVal Arg0Val = C.getSVal(arg0Expr);
     if (!Arg0Val.getAs<DefinedOrUnknownSVal>())
         return nullptr;
-    QualType ptrTy = Arg0Val.getAsSymbol()->getType();
+    SymbolRef Arg0Sym = Arg0Val.getAsSymbol();
+    if (!Arg0Sym) {
+        return nullptr;
+    }
+    QualType ptrTy = Arg0Sym->getType();
+
+
 
     DefinedOrUnknownSVal arg0Val = Arg0Val.castAs<DefinedOrUnknownSVal>();
 
