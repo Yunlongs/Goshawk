@@ -30,7 +30,7 @@ To see bugs found by Goshawk, visit [bug_list](bug_list.md) page. You can also s
 ## Ⅰ.A Docker build (recommend)
 Directly use our image released on DockerHub:
 ```
-docker pull cascadessjtu/goshawk
+docker pull mmmiracle/goshawk
 ```
 Or build docker image by yourself:
 ```
