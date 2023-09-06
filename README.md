@@ -36,7 +36,7 @@ Or build docker image by yourself:
 ```
 docker build -t goshawk .
 ```
-## Ⅰ.B Manually configurate
+## Ⅰ.B Manually build
 ```buildoutcfg
 robin-map
 python 3.7+
@@ -62,7 +62,12 @@ you need to record the compilation commands used by each file to compile the sou
 We can use CodeChecker to record the required compilation commands. For the projects which use `Makefile` to build,
 we can use the `log -b ` cmd to encapsulate the `make` related cmd to record the compiling process:
 
-```CodeChecker log -b "make CC=clang HOSTCC=clang -jN" -o compilation.json```
+```
+export CC=clang
+export CXX=clang++
+CodeChecker log -b "make CC=clang HOSTCC=clang -j$(nproc)" -o compilation.json
+```
+Remember that set your default compilers to clang and clang++.
 
 The compilation commands will be recorded in the file of `compilation.json`.
 
@@ -70,14 +75,16 @@ The compilation commands will be recorded in the file of `compilation.json`.
 ## Ⅱ.B Run the full phases of Goshawk to analyze a target project.
 >note: For large project, like linux kernel, you should guarantee that there is at least 300GB ROM on you hard disk.
  
- Currently, you only need one command to analyze a project by Goshawk:
+Currently, you only need one command to analyze a project by Goshawk:
  
- ```buildoutcfg
+```
 python3 run.py target_project_path
 ```
+
 But you should make sure that there is a `compilation.json` file of your project under the `target_project_path`.
 
-The MM functions and their corresponding MOSs will be generated at `output/alloc` and `output/free`. 
+The MM functions and their corresponding MOSs will be generated at `output/alloc` and `output/free`.
+> Note: All the MM functions in `AllocNormalFile.txt`, `AllocCustomFile.txt`, `FreeNormalFile.txt` and `FreeCustomFile.txt` are considered as customized. They are separated as *NormalFile.txt and *CustomFile.txt because all MM functions in *NormalFile.txt behavior like `malloc` or `free`. It is an implementation decison.
 
 The bug detection results will be generated at `output/report_html/index.html`.
 
