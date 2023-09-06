@@ -4,7 +4,12 @@
 // See https://llvm.org/LICENSE.txt for license information.
 // SPDX-License-Identifier: Apache-2.0 WITH LLVM-exception
 
-
+// Invoke cmd: clang -Xclang -analyze -Xclang -load -Xclang ${Goshawk}/plugins/GoshawkAnalyzer.so \
+               -Xclang -analyzer-checker=security.GoshawkChecker -Xclang -analyzer-config \
+               -Xclang security.GoshawkChecker:MemFuncsDir=${Goshawk}/temp/CSA \
+               -Xclang -analyzer-config -Xclang security.GoshawkChecker:PathNumberFile=${Goshawk}/temp/CSA/path_number.txt \
+               -Xclang -analyzer-config -Xclang security.GoshawkChecker:ExternFile=${Goshawk}/temp/CSA/extern_count.txt \
+               -c test.c
 
 #include "clang/StaticAnalyzer/Checkers/BuiltinCheckerRegistration.h"
 #include "clang/AST/Attr.h"
