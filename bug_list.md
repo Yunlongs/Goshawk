@@ -61,6 +61,22 @@ https://github.com/torvalds/linux/commit/72ce11ddfa
 
 https://github.com/torvalds/linux/commit/4fb44dd2c1
 
+https://github.com/torvalds/linux/commit/52762efa2b
+
+https://github.com/torvalds/linux/commit/9272e5d002
+
+https://github.com/torvalds/linux/commit/ea995218dd
+
+https://github.com/torvalds/linux/commit/7272b591c4
+
+https://github.com/torvalds/linux/commit/115726c5d3
+
+https://github.com/torvalds/linux/commit/01fe904c9a
+
+https://lore.kernel.org/patchwork/patch/1404497
+
+https://lore.kernel.org/patchwork/patch/1406302
+
 ## FreeBSD kernel
 https://bugs.freebsd.org/bugzilla/show_bug.cgi?id=255859
 
@@ -86,6 +102,14 @@ https://bugs.freebsd.org/bugzilla/show_bug.cgi?id=255874
 
 https://bugs.freebsd.org/bugzilla/show_bug.cgi?id=255875
 
+https://bugs.freebsd.org/bugzilla/show_bug.cgi?id=255878
+
+https://bugs.freebsd.org/bugzilla/show_bug.cgi?id=255879
+
+https://bugs.freebsd.org/bugzilla/show_bug.cgi?id=255880
+
+https://bugs.freebsd.org/bugzilla/show_bug.cgi?id=255881
+
 ## OpenSSL
 https://github.com/openssl/openssl/issues/14910
 
@@ -97,11 +121,17 @@ https://github.com/openssl/openssl/issues/14915
 
 https://github.com/openssl/openssl/issues/14916
 
-https://github.com/openssl/openssl/issues/14914
-
 https://github.com/openssl/openssl/issues/20278
 
 https://github.com/openssl/openssl/issues/20299
 
 ## Redis
 https://github.com/redis/redis/issues/8797
+
+## QcloudE (Tencent-IoT-Explorer-SDK)
+https://github.com/TencentCloud/tencentcloud-iot-explorer-sdk-embedded-c/issues/10
+
+https://github.com/TencentCloud/tencentcloud-iot-explorer-sdk-embedded-c/issues/11
+
+## QcloudH (Tencent-IoT-SDK)
+https://github.com/TencentCloud/tencentcloud-iot-sdk-embedded-c/issues/37
