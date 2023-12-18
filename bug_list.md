@@ -61,6 +61,12 @@ https://github.com/torvalds/linux/commit/72ce11ddfa
 
 https://github.com/torvalds/linux/commit/4fb44dd2c1
 
+https://github.com/torvalds/linux/commit/7b0ddc134
+
+https://github.com/torvalds/linux/commit/aadb22ba2f6
+
+https://github.com/torvalds/linux/commit/f973795a
+
 ## FreeBSD kernel
 https://bugs.freebsd.org/bugzilla/show_bug.cgi?id=255859
 
